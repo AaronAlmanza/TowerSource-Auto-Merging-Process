@@ -82,7 +82,7 @@
       4. Example
          <!--- Show an example grouping that made it through this case successfully --->
    9. Whole Code
-       <!--- I don't need to paste the whole code here. What I can do is just link the
+       <!--- I don't need to paste the whole code here. What I can do is just link the file with the whole code here. I would say that the code provided is for the jupyter notebook environment to be ran. I will yet to put the code that can be ran from other IDEs like spyder or pycharm or the like. -->
    10. Future Plans
        <!--- In the future, we are to expect that we will be seeing more opportunities to expand the functionality of the auto-merging process from the five major cases we focused on. As of now, we are studying the possibility of having Case 6 (and then just give an overview on how it looks like and an example). --->
        
