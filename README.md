@@ -26,7 +26,7 @@
 5. Auto-Merging's High Level Logic
    <!--- Here, I should mention that this process can be divided in to three major chunks of logic: The Looking for Merging candidates, the meats-n-potatoes process of Case X, the maintenance logic. And then describe briefly what each chunks of logic represents and what to expect for each one of which. --->
    
-7. Auto-Merging Process' Database Anatomy
+6. Auto-Merging Process' Database Anatomy
    <!--- I think it is better if I'll enclose each table in a tabular information as presented for each sub items of chapter/section 6 --->
    1. Prox Audits Table
       <!---Here, I should introduce the table name and what should it consist. I need to say that this table is the input table for each Case. So for Case 1, the input table should be the prox_audits table ran by my query.--->
@@ -37,7 +37,7 @@
    4. Maintenance Process
     <!---Introduce the name of the tables produced by this chunk of logic and what kind of records should be housed by each table. I should say that "if we continue case 1's process, it should producs tables X and Y. And then at this point, Table Z will be the input table for Case 2 to kick off, and then the same process continues for each Cases". --->
    
-8. Elaborated Auto-Merging Process (Algorithm)
+7. Elaborated Auto-Merging Process (Algorithm)
    1. Table Metadata
       <!--- Information about each columns in prox_audits table. --->
    2. Python Packages
@@ -85,9 +85,11 @@
    9. Whole Code
        <!--- I don't need to paste the whole code here. What I can do is just link the file with the whole code here. I would say that the code provided is for the jupyter notebook environment to be ran. I will yet to put the code that can be ran from other IDEs like spyder or pycharm or the like. -->
       
-9. Future Plans
+8. Future Plans
    <!--- In the future, we are to expect that we will be seeing more opportunities to expand the functionality of the auto-merging process from the five major cases we focused on. As of now, we are studying the possibility of having Case 6 (and then just give an overview on how it looks like and an example). --->
 
-10. Bibliography
+9. Bibliography
      <!---I can create a numbering style (like in RRL) for each parts in the main documentation and then cited in this chapter. --->
      <!---FCC-ASR Website, research papers where FCC-ASR has been released or reviewed, FAA's website, research papers where FAA has been released or reviewed, packages used in Python (each packages should be cited using their documentation (can be a URL) --->
+
+---
