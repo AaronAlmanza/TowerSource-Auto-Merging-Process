@@ -1,5 +1,3 @@
----
-
 # Table of Contents
 
 
@@ -93,5 +91,3 @@
 10. Bibliography
      <!---I can create a numbering style (like in RRL) for each parts in the main documentation and then cited in this chapter. --->
      <!---FCC-ASR Website, research papers where FCC-ASR has been released or reviewed, FAA's website, research papers where FAA has been released or reviewed, packages used in Python (each packages should be cited using their documentation (can be a URL) --->
-
----
