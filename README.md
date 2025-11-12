@@ -93,3 +93,8 @@
      <!---FCC-ASR Website, research papers where FCC-ASR has been released or reviewed, FAA's website, research papers where FAA has been released or reviewed, packages used in Python (each packages should be cited using their documentation (can be a URL) --->
 
 ---
+# 1. Introduction
+
+This techical documentation is solely dedicated to rigorously discuss the Auto-Merging process which is implemented as part of the **TowerSource Automation Project** which is to be deployed in the [Superblocks](https://docs.superblocks.com/) platform. 
+
+As a disclaimer, this document will not entail the discussion of the totality of each TowerSource modules implemented in Superblocks. We should take note that the Auto-Merging process will kick-off after the Proximity Audits module ran for Superblock's TowerSource. To know more about the architecture and backend development of the TowerSource in Superblocks platform prior to the processing of Auto-Merging job, please refer to this (*just a placeholder here to add Ar Jay's Documentation*) documentation. This document is also not the main document to be used as reference by the readers to understand the business rules and logic behind TowerSource, in depth. The theoretical framework discussed in this document are the pre requisite information that the readers should know before digging into the world of Auto-Merging process. 
