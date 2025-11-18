@@ -14,7 +14,7 @@
    4. [FAA](#iii-faa)
       <!-- Show the website, link the website, describe what the website is all about, show an example of a complete tower information. --->
       
-3. Sherlock's Proximity Audit Overview
+3. [Sherlock's Proximity Audit Overview](#3-sherlocks-proximity-audit-overview)
    1. Overview
       <!-- From the previous section, we talked about the Tower Assets' sources. Now, the Data Analysts should now perform some auditing to reconcile records in the database coming from these sources regarding which pertains to the same tower and otherwise. Since we capture data from these different sources, it is probabilistic to think that a single tower site will show up to these three different sources, one way or another. In the world of Towersource, if a tower asset/record, say, coming from the company pertains to the same tower showing from FCC-ASR and/or FAA's website, then the analyst should "merge" the records and create a singular record that will capture all of the demographics and techinical details of that said tower as complete and accurate as possible. But if a set of records pertain to different towers, then the analyst should not merge any of these records and just to "Confirm Correct" that each records are independent and different from each other, and then "Continue" to the next set of records to audit. But what logic should be followed on how to structure these "set of records" that should be grouped together for the analyst to look and do his/her further research? Also, what platform will these audits show up? As of the moment, we have the "Sherlock" UI to see all audits that the analyst should research and resolve (Show Sherlock), but since we're building the newer platform now in Superblocks these audits will be migrated there. In the general world of TowerSource, these audits can be determined through the "proximity audit". Here, I should define Proximity audits and the basic overview logic behind it. I should make it a point that it is very important to have the geographical coordinates shown by a specific tower site coming from either the Company', FCC-ASR's or FAA's website to determine which of the records should be grouped together and be further analyzed by the analyst simultaneously. A single "grouped" records based on proximity audit's logic can be called as a single "audit" or "group/grouping". As we load newer tower information coming from these different sources,  But what are the parts of a single "audit" or "grouping"?---> 
    2. Anatomy of Proximity Audit
@@ -237,11 +237,26 @@ A typical study number looks like this: **2025-ASO-12345-OE**. This is a formatt
 
 Like FCC-ASR, FAA also has an official [Public Search Portal](https://oeaaa.faa.gov/oeaaa/oe3a/main/#/search/records)[^11] for the Obstruction Evaluation / Airport Airspace Analysis (OEAAA) database. The FAA Study Number is the primary key you use on that website to look up the official public record for any given study.
 
-By entering a valid study number into that search page, you can find the structure's details (location, height) and the FAA's final determination, which is the document needed for other permitting, like the FCC ASR. 
+By entering a valid study number into that search page, you can find the structure's details (location, height) and the FAA's final determination, which is the document needed for other permitting, like the FCC ASR. Shown below is an illustration of keying ASN/FAA Study number to pull the filing desired: 
+
+![Keying FAA Study Number 1](document_images/faa_1.png)
+![Keying FAA Study Number 2](document_images/faa_2.png)
+
+<br>
+<br>
 
 You can also key in by FCC-ASR number to see a historical view of its study numbers as shown below: 
 
 
+![Keying FCC-ASR 1](document_images/faa_3.png)
+![Keying FCC-ASR 2](document_images/faa_4.png)
+
+
+> an FCC-ASR number can have multiple Study Number associated with it over its lifetime because every time a tower is modified, corrected, or re-evaluated, the FAA treats it as a new "case" and assigns it a new number.
+
+
+---
+# 3. Sherlock's Proximity Audit Overview
 
 ---
 # 9. References
