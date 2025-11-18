@@ -9,7 +9,7 @@
       1. [Company Tower Sheet from the Tower Company](#a-company-tower-sheet-from-the-tower-company)
       2. [Company Tower Sheet by Outreach](#b-company-tower-sheet-by-outreach)
       3. [Web Scraping](#c-web-scraping)
-   3. FCC-ASR
+   3. [FCC-ASR](#ii-fcc-asr)
       <!-- Show the website, link the website, describe what the website is all about, show an example of a complete tower information. --->
    4. FAA
       <!-- Show the website, link the website, describe what the website is all about, show an example of a complete tower information. --->
@@ -173,3 +173,7 @@ Here, we can see that Titan Towers has an interactive map where each pinned poin
 
 
 > Note that each website are built differently. That's why it is important to inspect the website's structure or use developer's tool to see the appropriate method of scraping the said website. Sometimnes you might use python library packages like [Selenium](https://selenium-python.readthedocs.io/) whenever the tower information are stored dynamically or whenever you want to perform browser automation, or one can use [BeautifulSoup](https://pypi.org/project/beautifulsoup4/) (in conjunction with requests or Selenium) to statically parse HTML/XML and extract specific information from it.
+
+
+
+## ii. FCC-ASR
