@@ -11,7 +11,7 @@
       3. [Web Scraping](#c-web-scraping)
    3. [FCC-ASR](#ii-fcc-asr)
       <!-- Show the website, link the website, describe what the website is all about, show an example of a complete tower information. --->
-   4. FAA
+   4. [FAA](#iii-faa)
       <!-- Show the website, link the website, describe what the website is all about, show an example of a complete tower information. --->
       
 3. Sherlock's Proximity Audit Overview
@@ -199,6 +199,50 @@ In Towersource's aspect, we fetch data from the FCC-ASR website which is done at
 ![FCC-ASR Registration Search 5](document_images/fcc_asr_ui5.png)
 
 
+## iii. FAA
+
+**FAA Study Number** (also called as Aeronautical Study Number or ASN) is a unique tracking identifier assigned by the Federal Aviation Administration (FAA). Its purpose is to track a specific "Obstruction Evaluation" (OE) case. This process begins when someone (like a developer, tower owner, or crane operator) files a notice (Form 7460-1[^10]) for a proposed structure that is either: Over 200 feet tall, or Close to an airport. 
+
+The FAA then conducts a study using this number to determine if the proposed structure would be a hazard to air navigation. The study concludes with a "Determination" (e.g., "No Hazard," "No Hazard with Lighting," or "Hazard").
+
+A typical study number looks like this: **2025-ASO-12345-OE**. This is a formatted identifier that tells you key information about the case:
+
+- **2025 (Year):** This is the calendar year in which the case was filed.
+- **ASO (Service Area / Office):** Three-letter code that identifies the specific FAA regional office or service center that is handling the study. Each region has its own code:
+
+| Code | FAA Service Area / Region   |
+|------|-----------------------------|
+| AAL  | Alaskan                     |
+| ACE  | Central                     |
+| AGL  | Great Lakes                 |
+| ANE  | New England                 |
+| ANM  | Northwest Mountain          |
+| ASO  | Southern                    |
+| ASW  | Southwest                   |
+| AWP  | Western-Pacific             |
+| WTW  | Western Terminal Operations |
+
+- **12345 (Sequence Number):** This is a unique sequential number assigned by that specific office for that year.
+- **OE (Case Type):** This suffix indicates the type of case. Commonly it is *OE* which stands form *Obstruction Evaluation*.
+
+| Acronym | Case Type              | Definition                                                                                                                                                                                 |
+|---------|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| OE      | Obstruction Evaluation | This is the most common type. It is a study of a physical structure to see if it  obstructs navigable airspace or interferes with signals.                                                 |
+| NRA     | Non-Rulemaking Airport | This study is for proposals on a public-use airport or that affect the airport's layout. Example: A proposal to build a new hangar on an airport's property, or a plan to extend a runway. |
+| NR      | Non-Rulemaking         | This is a broader "non-rulemaking" category for aeronautical studies that are  not physical obstructions and not airport layout changes.                                                   |
+
+
+<br>
+
+
+Like FCC-ASR, FAA also has an official [Public Search Portal](https://oeaaa.faa.gov/oeaaa/oe3a/main/#/search/records)[^11] for the Obstruction Evaluation / Airport Airspace Analysis (OEAAA) database. The FAA Study Number is the primary key you use on that website to look up the official public record for any given study.
+
+By entering a valid study number into that search page, you can find the structure's details (location, height) and the FAA's final determination, which is the document needed for other permitting, like the FCC ASR. 
+
+You can also key in by FCC-ASR number to see a historical view of its study numbers as shown below: 
+
+
+
 ---
 # 9. References
 
@@ -211,3 +255,5 @@ In Towersource's aspect, we fetch data from the FCC-ASR website which is done at
 [^7]: Code of Federal Regulations, Title 14, Part 77.9 – "Construction or alteration requiring notice." [https://www.ecfr.gov/current/title-14/chapter-I/subchapter-E/part-77/subpart-B/section-77.9](https://www.ecfr.gov/current/title-14/chapter-I/subchapter-E/part-77/subpart-B/section-77.9)
 [^8]: FCC Antenna Structure Registration (ASR) - Overview. [https://www.fcc.gov/wireless/support/knowledge-base/antenna-structure-registration-asr-resources/antenna-structure](https://www.fcc.gov/wireless/support/knowledge-base/antenna-structure-registration-asr-resources/antenna-structure)
 [^9]: FCC-ASR Registration Search tool. [https://wireless2.fcc.gov/UlsApp/AsrSearch/asrRegistrationSearch.jsp](https://wireless2.fcc.gov/UlsApp/AsrSearch/asrRegistrationSearch.jsp)
+[^10]: FAA Form 7460-1 - "Notice of Proposed Construction or Alteration". [https://www.faa.gov/documentlibrary/media/form/faa7460_1.pdf](https://www.faa.gov/documentlibrary/media/form/faa7460_1.pdf)
+[^11]: FAA's official public search portal for the Obstruction Evaluation / Airport Airspace Analysis (OEAAA) database.. [https://oeaaa.faa.gov/oeaaa/oe3a/main/#/search/records](https://oeaaa.faa.gov/oeaaa/oe3a/main/#/search/records)
