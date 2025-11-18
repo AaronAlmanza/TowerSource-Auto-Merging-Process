@@ -146,7 +146,7 @@ Now shown below is an example contents from the said tower sheet:
 If Tower Companies aren't reaching out to us whenever they have some updates with their Tower Assets listing, DQA team has the responsibility to do some "Outreach" methodology which is done every quarter of the year. Here, we are to reach out to various Tower Companies asking if they can provide us their current and most up-to-date Tower Assets listing. Mostly this is done through email form, as shown below: 
 
 
-
+![company outreach](document_images/company_out_reach.png)
 
 
 
