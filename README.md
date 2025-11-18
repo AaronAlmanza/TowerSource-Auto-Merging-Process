@@ -91,7 +91,7 @@
 8. Future Plans
    <!--- In the future, we are to expect that we will be seeing more opportunities to expand the functionality of the auto-merging process from the five major cases we focused on. As of now, we are studying the possibility of having Case 6 (and then just give an overview on how it looks like and an example). --->
 
-9. Bibliography
+9. [References](#9-references)
      <!---I can create a numbering style (like in RRL) for each parts in the main documentation and then cited in this chapter. --->
      <!---FCC-ASR Website, research papers where FCC-ASR has been released or reviewed, FAA's website, research papers where FAA has been released or reviewed, packages used in Python (each packages should be cited using their documentation (can be a URL) --->
 
