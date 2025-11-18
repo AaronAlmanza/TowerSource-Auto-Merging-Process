@@ -192,6 +192,12 @@ By the general rule: If you do not have to notify the FAA, you do not have to re
 In Towersource's aspect, we fetch data from the FCC-ASR website which is done at the backend as part of enriching its database. In DQA's perspective, we use the FCC-ASR's [Registraction Search](https://wireless2.fcc.gov/UlsApp/AsrSearch/asrRegistrationSearch.jsp)[^9] tool to search for current ASR registrations that could help in doing research for audit purposes (**"Auditing"** will be discussed further in Section 3 of this document). Shown below are some snippets on what should we expect seeing when one used the said tool: 
 
 
+![FCC-ASR Registration Search 1](document_images/fcc_asr_ui.png)
+![FCC-ASR Registration Search 2](document_images/fcc_asr_ui2.png)
+![FCC-ASR Registration Search 3](document_images/fcc_asr_ui3.png)
+![FCC-ASR Registration Search 4](document_images/fcc_asr_ui4.png)
+![FCC-ASR Registration Search 5](document_images/fcc_asr_ui5.png)
+
 
 ---
 # 9. References
