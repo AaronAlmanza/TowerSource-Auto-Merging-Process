@@ -6,9 +6,12 @@
 2. [TowerSource's Data Source Overview](#2-towersources-data-source-overview)
    1. [Company data](#i-company-data)
       <!---a.) Outreach (Show an example of email sent to the companies and the example raw tower sheet we received from them, also say that not all companies are reporting complete data), b.) Web Scraping (Show websites where they have site locators in a form of maps or something where web scraping can be performed)--->
-   2. FCC-ASR
+      1. [Company Tower Sheet from the Tower Company](#a-company-tower-sheet-from-the-tower-company)
+      2. [Company Tower Sheet by Outreach](#b-company-tower-sheet-by-outreach)
+      3. [Web Scraping](#c-web-scraping)
+   3. FCC-ASR
       <!-- Show the website, link the website, describe what the website is all about, show an example of a complete tower information. --->
-   3. FAA
+   4. FAA
       <!-- Show the website, link the website, describe what the website is all about, show an example of a complete tower information. --->
       
 3. Sherlock's Proximity Audit Overview
@@ -114,6 +117,13 @@ For this section, we will be discussing how we collect data into building the ri
 
 ## i. Company Data
 
-One of Towersource's data source is the Company data or what we call as the "Company Tower sheets". Some of the times, tower companies will be reaching to us to have their Tower Assets be reflected in the interface of Towersource. There are times too where the DQA team will be performing some "Outreach" activities where an analyst of the team will be reaching out various tower companies
+One of Towersource's data source is the Company data or what we call as the "Company Tower sheets". Sometimes, tower companies will be reaching out to us to have their Tower Assets be reflected in the interface of Towersource. Otherwise, there are times too where the DQA team will be performing some "Outreach" activities where an analyst of the team will be reaching out various tower companies. If the Company Tower Sheets couldn't be collected by eitherways, there are times where the DQA team will perform some Web Scraping methodology if the Tower Company's tower assets are publicly available and listed in their official websites (i.e., most of the time in a form of an interactive map, if not shown as tabular data in the company's official website). In this section, we will be showing these briefly with some examples each to visualize what a company tower sheet looks like and how to perform each of the said methods.
+
+## a. Company Tower Sheet from the Tower Company
+
+## b. Company Tower Sheet by Outreach
+
+## c. Web Scraping
+
 
 
