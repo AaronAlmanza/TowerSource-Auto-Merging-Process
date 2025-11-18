@@ -135,7 +135,7 @@ Tower Companies show interests into wanting their tower sites be reflected into 
 Now shown below is an example contents from the said tower sheet:
 
 
-
+![example contents](document_images/company_reach_out2.png)
 
 
 > Note that Tower Companies have their own styles and formatting of sending their tower listings to us. Some companies might report fields pertaining to elevations in meters or feet or whatnot. Some companies will report ASR and/or Study Number but some will not. Some companies will report the geographical coordinate locations of their towers in decimal degrees or in Degrees-Minutes-Seconds or in Degrees and Decimal Minutes, etc. In legacy Towersource, the DQA analysts make sure to preprocess these information manually to standardize the reported data coming from different companies before uploading these into the database for further staging. In Superblocks Towersource, this preprocessing stage will be automated.
