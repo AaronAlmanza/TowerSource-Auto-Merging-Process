@@ -123,6 +123,7 @@ One of Towersource's data source is the Company data or what we call as the "Com
 
 Tower Companies show interests into wanting their tower sites be reflected into Ookla's Towersource web interface. This way, it will help these Tower Companies find locations, , see what competitors are doing, and manage their properties. For this to happen, there are Tower Companies who reaches out to our team to make their Tower Assets be reflected in Towersource which is mostly in the form of an email. Shown below is an example exhibiting this: 
 
+![company_reaching_out](document_images/company_reach_out.png)
 
 ### b. Company Tower Sheet by Outreach
 
