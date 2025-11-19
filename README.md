@@ -319,9 +319,20 @@ For this section, we will be visualizing how a single audit or grouping looks li
 Previously, we have introduced a glimpse of Sherlock's UI. To navigate inside the proximity audits that need to be reviewed, one should click the option as shown below: 
 
 
+![Sherlock Prox Audits 1](document_images/sherlock1_5.png)
+
+<br>
+
+After clicking the Proximity Audit option, it will show you the audits the analyst should research and take further action from that. From the first screenshot shown below, the user can opt to choose what company to look at which is boxed in red. From the first screenshot below, **SBA** company was chosen and these two records showed up. The top row is the focus or reference record/asset. Here, we can see that the focus record was loaded last February 2025 and that the source is the tower company named as SBA. The record below it is the associated record/asset. We can see that the associated record has a user action being committed last February of 2022. This two records forms an audit or grouping. Based on the map, we can see that the two assets are somewhat close with each other, and it should follow the proximity radial distance of 50m from the focus record. We can see also that this grouping showed up in the proximity audit because even though the focus and associated records matched at Tower name, operator site identifier, site status, category, and agl, these records still differ at the operator, manager, and tower type perspective. Also, the focus record don't have an ASR number making the fcc owner name to be blank, while the associated record has an ASR present which enables to lookup for the corresponding fcc owner name. The user can further look into the records one at a time to unpack more information other than what's showing in the screenshot below by clicking the details icon boxed in green (or, the user can right click anywhere in the row and click "Details"). If the user does this, say for the associated record, the second and third screenshot will show up.
 
 
-After clicking the Proximity Audit option, it will show you the audits the analyst should research and take further action from that. From the screenshot shown below, the user can opt to choose what company to look at which is boxed in red. From the screenshot below, **SBA** company was chosen and these two records showed up. The top row is the focus or reference record/asset. Here, we can see that the focus record was loaded last February 2025 and that the source is the tower company named as SBA. The record below it is the associated record/asset. We can see that the associated record has a user action being committed last February of 2022. This two records forms an audit or grouping. Based on the map, we can see that the two assets are somewhat close with each other, and it should follow the proximity radial distance of 50m from the focus record. We can see also that this grouping showed up in the proximity audit because even though the focus and associated records matched at Tower name, operator site identifier, site status, category, and agl, these records still differ at the operator, manager, and tower type perspective. Also, the focus record don't have an ASR number making the fcc owner name to be blank, while the associated record has an ASR present which enables to lookup for the corresponding fcc owner name. The user can further look into the records one at a time to unpack more information other than what's showing in the screenshot below by clicking the details icon boxed in green (or, the user can right click anywhere in the row and click "Details"). If the user does this, the second and third screenshot will show up.
+![Sherlock Prox Audits 2](document_images/sherlock2.png)
+![Sherlock Prox Audits 3](document_images/sherlock3.png)
+![Sherlock Prox Audits 4](document_images/sherlock4.png)
+
+<br>
+
+### b. Proximity Audit from Skeletor's view
 
 
 ---
