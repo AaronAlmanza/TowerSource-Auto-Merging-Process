@@ -23,7 +23,7 @@
       2. [Proximity Audit from Skeletor's view](#b-proximity-audit-from-skeletors-view)
          <!-- What table should give you the information about which if the focus and which are the respective associated records? What table should be used to join this proximity audits table to determine a more in depth tower information for each. Show here and link the SQL I wrote to get these information. Put a disclaimer that we will not be using delving into the "dimensions" table (i.e., manager_table, operator_table, etc.). We will end this section by showing the whole SQL and the snippet of the output (without the AGL thingies yet). --->
          
-4. Auto-Merging's Designed Process Overview
+4. [Auto-Merging's Designed Process Overview](#4-auto-mergings-designed-process-overview)
 <!--- Here, I will just introduce again the auto-merging process and the goal of creating an automated process for the merging process so that the analyst will only focus more on "audits" or "groupings" where further human intervention is required (i.e., further research, further traversing of the maps, further inquiries, etc.). I will discuss here that we will be using as a 'primary identifier' the FCC-ASR and FAA study number to determine one tower from another. These two ingredients will help us determine which focus/reference record should be merged to their respective associated record, and which shouldn't be merged and just do nothing with the records in a grouping or audit. And then from these identifiers, we can create different combination scenarios for FCC-ASR or FAA on how these two ingredients would show up in a grouping or audit. We will call these combination of scenarios as "cases". For the first implementation of the auto-merging process, we devised the 5 major cases: blablablabla --->
 
 5. Auto-Merging's High Level Logic
@@ -421,6 +421,11 @@ Shown below is one example of an audit or grouping. In the said query output, if
 
 The output of this query will be fed to the auto-merging process. For the next sections, we will now be delving into the said designed process from a surface level down to the most granular level. 
 <br>
+
+---
+# 4. Auto-Merging's Designed Process Overview
+
+
 
 ---
 # 9. References
