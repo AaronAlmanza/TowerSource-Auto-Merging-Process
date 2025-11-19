@@ -14,8 +14,8 @@
    4. [FAA](#iii-faa)
       <!-- Show the website, link the website, describe what the website is all about, show an example of a complete tower information. --->
       
-3. [Sherlock's Proximity Audit Overview](#3-sherlocks-proximity-audit-overview)
-   1. Overview
+3. [Towersource Proximity Audit Overview](#3-towersource-proximity-audit-overview)
+   1. [Overview](#i-overview)
       <!-- From the previous section, we talked about the Tower Assets' sources. Now, the Data Analysts should now perform some auditing to reconcile records in the database coming from these sources regarding which pertains to the same tower and otherwise. Since we capture data from these different sources, it is probabilistic to think that a single tower site will show up to these three different sources, one way or another. In the world of Towersource, if a tower asset/record, say, coming from the company pertains to the same tower showing from FCC-ASR and/or FAA's website, then the analyst should "merge" the records and create a singular record that will capture all of the demographics and techinical details of that said tower as complete and accurate as possible. But if a set of records pertain to different towers, then the analyst should not merge any of these records and just to "Confirm Correct" that each records are independent and different from each other, and then "Continue" to the next set of records to audit. But what logic should be followed on how to structure these "set of records" that should be grouped together for the analyst to look and do his/her further research? Also, what platform will these audits show up? As of the moment, we have the "Sherlock" UI to see all audits that the analyst should research and resolve (Show Sherlock), but since we're building the newer platform now in Superblocks these audits will be migrated there. In the general world of TowerSource, these audits can be determined through the "proximity audit". Here, I should define Proximity audits and the basic overview logic behind it. I should make it a point that it is very important to have the geographical coordinates shown by a specific tower site coming from either the Company', FCC-ASR's or FAA's website to determine which of the records should be grouped together and be further analyzed by the analyst simultaneously. A single "grouped" records based on proximity audit's logic can be called as a single "audit" or "group/grouping". As we load newer tower information coming from these different sources,  But what are the parts of a single "audit" or "grouping"?---> 
    2. Anatomy of Proximity Audit
       1. Proximity Audit from Sherlock's view
@@ -198,6 +198,8 @@ In Towersource's aspect, we fetch data from the FCC-ASR website which is done at
 ![FCC-ASR Registration Search 4](document_images/fcc_asr_ui4.png)
 ![FCC-ASR Registration Search 5](document_images/fcc_asr_ui5.png)
 
+<br>
+<br>
 
 ## iii. FAA
 
@@ -256,7 +258,25 @@ You can also key in by FCC-ASR number to see a historical view of its study numb
 
 
 ---
-# 3. Sherlock's Proximity Audit Overview
+# 3. Towersource Proximity Audit Overview
+
+## i. Overview
+
+From the previous section, we talked about Towersource's Data Sources. Now, DQA should perform the "auditing" part to reconcile records in the database coming from these sources regarding which pertains to the same tower and otherwise. Since we capture data from these different sources, it is probabilistic that the same single tower site will show up to these three different sources, one way or the other. 
+
+In the world of Towersource, if a tower asset/record, say, coming from the company pertains to the very same tower showing up from FCC-ASR and/or FAA's website, then the analyst should **"merge"** the records coming from these data sources and create a **singular record** that will capture all of the demographics and technical details of that said tower as complete and accurate as possible. This way, we will not be be overstating the volume of towers we will be committing in our final Towersource database.
+
+But if a **"set of records"** pertain to different towers, then the analyst should not merge any of these records and just to **"Confirm Correct"** that each tower assets/records in the given set are independent and different from each other, and then **"Continue"** to the next set of records to audit. We should not merge any records from a given set of records if these are truly different mounted towers. This way, we will not be understating the volume of towers we will be committing in our final Towersource database.
+
+But what logic should be followed on how to structure these said **"set of records"** that should be grouped together for the analyst to look and do his/her further research? Also, what platform will these audits show up? 
+
+As of the moment, we have the "Sherlock" UI to see all audits that the analyst should research and resolve. Shown below is [Sherlock's UI](https://sherlock.mosaik.com/#/resources/assets)[^12] for Towersource's aspect
+
+
+
+
+
+but since we're building the newer platform now in Superblocks these audits will be migrated there. In the general world of TowerSource, these audits can be determined through the "proximity audit". Here, I should define Proximity audits and the basic overview logic behind it. I should make it a point that it is very important to have the geographical coordinates shown by a specific tower site coming from either the Company', FCC-ASR's or FAA's website to determine which of the records should be grouped together and be further analyzed by the analyst simultaneously. A single "grouped" records based on proximity audit's logic can be called as a single "audit" or "group/grouping". As we load newer tower information coming from these different sources,  But what are the parts of a single "audit" or "grouping"?
 
 ---
 # 9. References
@@ -272,3 +292,4 @@ You can also key in by FCC-ASR number to see a historical view of its study numb
 [^9]: FCC-ASR Registration Search tool. [https://wireless2.fcc.gov/UlsApp/AsrSearch/asrRegistrationSearch.jsp](https://wireless2.fcc.gov/UlsApp/AsrSearch/asrRegistrationSearch.jsp)
 [^10]: FAA Form 7460-1 - "Notice of Proposed Construction or Alteration". [https://www.faa.gov/documentlibrary/media/form/faa7460_1.pdf](https://www.faa.gov/documentlibrary/media/form/faa7460_1.pdf)
 [^11]: FAA's official public search portal for the Obstruction Evaluation / Airport Airspace Analysis (OEAAA) database.. [https://oeaaa.faa.gov/oeaaa/oe3a/main/#/search/records](https://oeaaa.faa.gov/oeaaa/oe3a/main/#/search/records)
+[^12]: Towersource aspect in Sherlock's UI that shows the "assets" information currently stored in Towersource database (i.e., Skeletor). [https://sherlock.mosaik.com/#/resources/assets](https://sherlock.mosaik.com/#/resources/assets)
