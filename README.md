@@ -434,11 +434,11 @@ As we load more company tower sheets into the Towersource database, it will also
 This is where the motivation to create an automated process comes into play. This part of the project has the goal to perform an automated merging based on the specific sets of criteria that should be met. These specific sets of criteria were carefully designed from the rigorous reviews that the team have performed specifically though the commonalities that can be seen in production where merging should take place. The main challenge into the curation of this process is "how are we going to create an automated process that can distinguish if the records from a given audit or grouping pertains to the same tower?". The common answer for this is to use parameters that can innately identify one tower from another. The main proponents considered in this process to make the automation accurately distinguish which records pertain to the same tower are the tower identifiers discussed in the previous sections -- **FCC-ASR Number** and the **FAA Study Number**. From these two parameters, we have created a starting point on how we will be designing the sets of criteria. This point is where we have created five commonly seen cases where auto merging could happen. These cases are highly dependent on the presence and combination of FCC-ASR and FAA Study Number: 
 
 
-- Case 1: Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number and FAA Study Number.
-- Case 2: Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number but have different NON NULL FAA Study Number.
-- Case 3: Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number but either the Focus/Reference record or the Associated Record/s have NULL FAA Study Number. 
-- Case 4: The Focus/Reference record have NULL FCC-ASR Number and FAA Study Number while the Associated Record/s have NON NULL FCC-ASR Number and FAA Study Number.
-- Case 5: Both Focus/Reference record and Associated Record/s have NULL FCC-ASR Number and FAA Study Number.
+- **Case 1**: Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number and FAA Study Number.
+- **Case 2**: Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number but have different NON NULL FAA Study Number.
+- **Case 3**: Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number but either the Focus/Reference record or the Associated Record/s have NULL FAA Study Number. 
+- **Case 4**: The Focus/Reference record have NULL FCC-ASR Number and FAA Study Number while the Associated Record/s have NON NULL FCC-ASR Number and FAA Study Number.
+- **Case 5**: Both Focus/Reference record and Associated Record/s have NULL FCC-ASR Number and FAA Study Number.
 
 Based from each of these Five Cases, the merging candidates were pulled from the database. And then from these merging candidates for each cases, the sets of criteria were carefully designed so that auto merging of records that shouldn't be merged would be prevented. 
 
