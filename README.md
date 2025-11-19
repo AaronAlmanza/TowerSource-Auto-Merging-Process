@@ -334,6 +334,76 @@ After clicking the Proximity Audit option, it will show you the audits the analy
 
 ### b. Proximity Audit from Skeletor's view
 
+Evidently, the proximity audits shown by the Sherlock's view is connected from what's available in the Skeletor database. Basically, we can consider the table `towersource.assets` as our fact table while the `towersource.proximity_audit_assets` is one of the dimension tables of Towersource. The `towersource.proximity_audit_assets` designates the grouping, thus it dictates which is the focus asset and which is/are the associated asset/s. This table contains all of the assets that are yet to be audited. Once a grouping or an audit was resolved, that audit or grouping will not show up anymore in this table. To get the important demographics and technical information for both focus and associated records, it is housed by the `towersource.assets`. This table houses all of the assets that have been loaded & audited before, and assets that are yet to be audited. Then there are some of the dimension tables to get the information like asset types, operator name, manager name, tower site address & nation/country, and tower status. 
+
+The complete SQL code to get all of the proximity audits is shown below: 
+
+```sql
+WITH x AS
+(
+SELECT B.focus_asset_id, B.associated_asset_id, A.updated_by AS Source, A.created_at, A.updated_at, ST_Y(A.wkb_geometry) AS Latitude, 
+       ST_X(A.wkb_geometry) AS Longitude, A.name AS Name, A.operator_site_identifier AS operator_site_id, C.description AS Type, A.description,
+       D.entity_name AS operator_name, A.manager_id, A.agl, A.amsl, A.ground_elevation, A.haat, A.shelter, A.power, A.stories, A.fcc_asr_number, A.faa_study_number,
+       A.cdbs_facility_id, A.region, CONCAT(TRIM(E.street1), ' ', TRIM(E.street2), ', ', TRIM(E.city), ', ', TRIM(E.state), ' ', TRIM(E.postal_code), ', ', 
+       CASE WHEN TRIM(F.iso_2_abrv) = 'US' THEN 'UNITED STATES' ELSE TRIM(F.iso_2_abrv) END) AS Address, A.construction_date,
+       CASE WHEN A.stealth IS NULL THEN 'No' WHEN A.stealth IS FALSE THEN 'No' ELSE 'Yes' END AS stealth, G.name AS asset_status, B.audit_reason
+FROM towersource.assets AS A
+LEFT JOIN towersource.proximity_audit_assets AS B 
+          ON B.associated_asset_id = A.id
+LEFT JOIN towersource.asset_types AS C
+          ON A.type_id = C.id
+LEFT JOIN towersource.operators AS D
+          ON A.operator_id = D.id
+LEFT JOIN towersource.addresses AS E
+          ON A.address_id = E.id
+LEFT JOIN towersource.nations AS F 
+	      ON E.nation_id = F.id
+LEFT JOIN towersource.asset_statuses AS G
+          ON A.status_id = G.id
+UNION ALL               
+SELECT A.id, NULL AS associated_asset_id, A.updated_by AS Source, A.created_at, A.updated_at, ST_Y(A.wkb_geometry) AS Latitude, 
+       ST_X(A.wkb_geometry) AS Longitude, A.name AS Name, A.operator_site_identifier AS operator_site_id, C.description AS Type, A.description, 
+       D.entity_name AS operator_name, A.manager_id, A.agl, A.amsl, A.ground_elevation, A.haat, A.shelter, A.power, A.stories,  A.fcc_asr_number,
+       A.faa_study_number, A.cdbs_facility_id, A.region, CONCAT(TRIM(E.street1), ' ', TRIM(E.street2), ', ', TRIM(E.city), ', ', TRIM(E.state), ' ', TRIM(E.postal_code), ', ', 
+       CASE WHEN TRIM(F.iso_2_abrv) = 'US' THEN 'UNITED STATES' ELSE TRIM(F.iso_2_abrv) END) AS Address, A.construction_date,
+       CASE WHEN A.stealth IS NULL THEN 'No' WHEN A.stealth IS FALSE THEN 'No' ELSE 'Yes' END AS stealth, G.name AS asset_status, 'Focus Asset' AS audit_reason
+FROM towersource.assets AS A
+LEFT JOIN towersource.proximity_audit_assets AS B 
+          ON B.associated_asset_id = A.id
+LEFT JOIN towersource.asset_types AS C
+          ON A.type_id = C.id
+LEFT JOIN towersource.operators AS D
+          ON A.operator_id = D.id
+LEFT JOIN towersource.addresses AS E
+          ON A.address_id = E.id
+LEFT JOIN towersource.nations AS F 
+	      ON E.nation_id = F.id
+LEFT JOIN towersource.asset_statuses AS G
+          ON A.status_id = G.id
+WHERE A.id IN (SELECT DISTINCT focus_asset_id FROM towersource.proximity_audit_assets)
+), 
+y AS 
+(
+SELECT x.focus_asset_id, z.updated_by AS focus_asset, x.associated_asset_id, x.source, x.created_at, x.updated_at, x.latitude, x.longitude, x.name, 
+       x.operator_site_id, x.type, x.description, x.operator_name, j.entity_name AS manager_name, i.entity_name AS fcc_owner_name, x.agl, x.amsl, x.ground_elevation,
+       x.haat, x.shelter, x.power, x.stories, x.fcc_asr_number, x.faa_study_number, x.cdbs_facility_id, x.region, x.address, x.construction_date, x.stealth,
+       x.asset_status, x.audit_reason
+FROM x 
+LEFT JOIN towersource.assets AS z
+		  ON x.focus_asset_id = z.id
+LEFT JOIN towersource.operators AS j
+          ON x.manager_id = j.id
+LEFT JOIN towersource.asr_company_map_bak AS i
+          ON x.fcc_asr_number =  i.fcc_asr_number
+)
+SELECT DISTINCT y.focus_asset_id, y.focus_asset, y.associated_asset_id, y.source, y.created_at, y.updated_at, y.latitude, y.longitude, y.name, 
+       y.operator_site_id, y.type, y.description, y.operator_name, y.manager_name, y.fcc_owner_name, y.agl, y.amsl, y.ground_elevation, y.haat, 
+       y.shelter, y.power, y.stories, y.fcc_asr_number, y.faa_study_number, y.cdbs_facility_id, y.region, y.address, y.construction_date, 
+       y.stealth, y.asset_status, y.audit_reason
+FROM y
+WHERE y.focus_asset_id IS NOT NULL          
+ORDER BY y.focus_asset_id, y.associated_asset_id NULLS FIRST;
+```
 
 ---
 # 9. References
