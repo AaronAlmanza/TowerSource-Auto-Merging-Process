@@ -405,6 +405,23 @@ WHERE y.focus_asset_id IS NOT NULL
 ORDER BY y.focus_asset_id, y.associated_asset_id NULLS FIRST;
 ```
 
+<br>
+
+Shown below is one example of an audit or grouping. In the said query output, if the records have the same  `focus_asset_id`, then those records corresponds to an audit or grouping. In an audit/grouping, the record with `NULL` `associated_asset_id` is the focus record, while the records with `NOT NULL` `associated_asset_id` are the associated records: 
+
+
+| focus_asset_id | focus_asset                     | associated_asset_id | source                          | created_at          | updated_at          | latitude | longitude  | name             | operator_site_id | type                    | description | operator_name                   | manager_name | fcc_owner_name                     | agl  | amsl  | ground_elevation | haat | shelter | power | stories | fcc_asr_number | faa_study_number | cdbs_facility_id | region | address                                                  | construction_date | stealth | asset_status | audit_reason          |
+| -------------- | ------------------------------- | ------------------- | ------------------------------- | ------------------- | ------------------- | -------- | ---------- | ---------------- | ---------------- | ----------------------- | ----------- | ------------------------------- | ------------ | ---------------------------------- | ---- | ----- | ---------------- | ---- | ------- | ----- | ------- | -------------- | ---------------- | ---------------- | ------ | -------------------------------------------------------- | ----------------- | ------- | ------------ | --------------------- |
+| 1147142        | Everest Infrastructure Partners |                     | Everest Infrastructure Partners | 2025-02-18 16:27:16 | 2025-02-18 16:27:16 | 46.68272 | \-67.99925 | 333 State St     | US645557         | Lattice / Self Standing |             | Everest Infrastructure Partners |              | Spectrum Northeast, LLC            | 6.4  | 209.1 | 202.7            |      |         |       |         | 1304467        | 2017-ANE-3794-OE |                  |        | 333 State St , Presque Isle, ME 04769, UNITED STATES     |                   | No      | Dismantled   | Focus Asset           |
+| 1147142        | Everest Infrastructure Partners | 820988              | sgaither                        | 2015-04-21 18:15:04 | 2023-01-09 16:50:37 | 46.68269 | \-67.99869 | Presque Isle     |                  | Lattice / Self Standing | LTOWER      | Charter Communications          | KGI Wireless | Spectrum Northeast, LLC            | 9.1  | 215.5 | 206.4            |      |         |       |         | 1304467        | 2017-ANE-3794-OE |                  |        | 329 State St , Presque Isle, ME 04769, UNITED STATES     | 1981-06-01        | No      | Dismantled   | Proximity Audit (42m) |
+| 1147142        | Everest Infrastructure Partners | 963158              | ASR                             | 2019-10-16 10:34:55 | 2019-10-16 10:34:55 | 46.68269 | \-67.99925 | 331 State Street |                  | Monopole                | MTOWER      | AT&T                            |              | Northeast Wireless Networks, LLC   | 30.5 | 234   | 203.5            |      |         |       |         | 1295433        | 2019-ANE-2510-OE |                  |        | 331 State Street , Pesque Isle, ME 04769, UNITED STATES  | 2015-04-10        | No      | Active       | Proximity Audit (3m)  |
+| 1147142        | Everest Infrastructure Partners | 1048858             | sgaither                        | 2015-02-03 23:55:20 | 2023-01-06 22:58:37 | 46.68268 | \-67.9992  | Presque Isle Dt  | 444389           | Monopole                | POLE        | USCellular                      |              | UNITED STATES CELLULAR CORPORATION | 30.4 | 234.6 | 204.2            |      |         |       |         | 1240747        | 2023-ANE-3329-OE |                  |        | 280 State Street , Presque Isle, ME 04769, UNITED STATES | 2015-03-24        | No      | Active       | Proximity Audit (5m)  |
+
+<br>
+
+The output of this query will be fed to the auto-merging process. For the next sections, we will now be delving into the said designed process from a surface level down to the most granular level. 
+<br>
+
 ---
 # 9. References
 
