@@ -17,10 +17,10 @@
 3. [Towersource Proximity Audit Overview](#3-towersource-proximity-audit-overview)
    1. [Overview](#i-overview)
       <!-- From the previous section, we talked about the Tower Assets' sources. Now, the Data Analysts should now perform some auditing to reconcile records in the database coming from these sources regarding which pertains to the same tower and otherwise. Since we capture data from these different sources, it is probabilistic to think that a single tower site will show up to these three different sources, one way or another. In the world of Towersource, if a tower asset/record, say, coming from the company pertains to the same tower showing from FCC-ASR and/or FAA's website, then the analyst should "merge" the records and create a singular record that will capture all of the demographics and techinical details of that said tower as complete and accurate as possible. But if a set of records pertain to different towers, then the analyst should not merge any of these records and just to "Confirm Correct" that each records are independent and different from each other, and then "Continue" to the next set of records to audit. But what logic should be followed on how to structure these "set of records" that should be grouped together for the analyst to look and do his/her further research? Also, what platform will these audits show up? As of the moment, we have the "Sherlock" UI to see all audits that the analyst should research and resolve (Show Sherlock), but since we're building the newer platform now in Superblocks these audits will be migrated there. In the general world of TowerSource, these audits can be determined through the "proximity audit". Here, I should define Proximity audits and the basic overview logic behind it. I should make it a point that it is very important to have the geographical coordinates shown by a specific tower site coming from either the Company', FCC-ASR's or FAA's website to determine which of the records should be grouped together and be further analyzed by the analyst simultaneously. A single "grouped" records based on proximity audit's logic can be called as a single "audit" or "group/grouping". As we load newer tower information coming from these different sources,  But what are the parts of a single "audit" or "grouping"?---> 
-   2. Anatomy of Proximity Audit
-      1. Proximity Audit from Sherlock's view
+   2. [Anatomy of Proximity Audit](#ii-anatomy-of-proximity-audit)
+      1. [Proximity Audit from Sherlock's view](#a-proximity-audit-from-sherlocks-view)
          <!-- Just show an example proximity audit and point out which is the reference/focus record and which is/are the associated record/s. --->
-      2. Proximity Audit from Skeletor's view
+      2. [Proximity Audit from Skeletor's view](#b-proximity-audit-from-skeletors-view)
          <!-- What table should give you the information about which if the focus and which are the respective associated records? What table should be used to join this proximity audits table to determine a more in depth tower information for each. Show here and link the SQL I wrote to get these information. Put a disclaimer that we will not be using delving into the "dimensions" table (i.e., manager_table, operator_table, etc.). We will end this section by showing the whole SQL and the snippet of the output (without the AGL thingies yet). --->
          
 4. Auto-Merging's Designed Process Overview
@@ -270,13 +270,55 @@ But if a **"set of records"** pertain to different towers, then the analyst shou
 
 But what logic should be followed on how to structure these said **"set of records"** that should be grouped together for the analyst to look and do his/her further research? Also, what platform will these audits show up? 
 
-As of the moment, we have the "Sherlock" UI to see all audits that the analyst should research and resolve. Shown below is [Sherlock's UI](https://sherlock.mosaik.com/#/resources/assets)[^12] for Towersource's aspect
+As of the moment, we have the "Sherlock" UI to see all audits that the analyst should research and resolve. Shown below is [Sherlock's UI](https://sherlock.mosaik.com/#/resources/assets)[^12] for Towersource's aspect:
 
 
+![Glimpse of Sherlock UI](document_images/sherlock1.png)
 
 
+> The image shown above is a glimpse of what Sherlock UI looks like. This interface is used by the DQA team to retrieve tower assets information and some common translations (i.e., How raw data is being mapped into the standardized and transformed information followed by the legacy Towersource system) from Towersource's database (i.e., Skeletor) without explicity writing SQL code. Additionally, the image shown above is the "Assets" menu of the Towersource aspect of the said UI. Here we can retrieve the demographics and technical information for each tower assets stored in Skeletor. Conjunctionally, we can also select the desired assets here and lay these out in the interactive map shown in the image to visualize the location and whatnot. 
 
-but since we're building the newer platform now in Superblocks these audits will be migrated there. In the general world of TowerSource, these audits can be determined through the "proximity audit". Here, I should define Proximity audits and the basic overview logic behind it. I should make it a point that it is very important to have the geographical coordinates shown by a specific tower site coming from either the Company', FCC-ASR's or FAA's website to determine which of the records should be grouped together and be further analyzed by the analyst simultaneously. A single "grouped" records based on proximity audit's logic can be called as a single "audit" or "group/grouping". As we load newer tower information coming from these different sources,  But what are the parts of a single "audit" or "grouping"?
+<br>
+
+> But since we're now building the newer platform in Superblocks, with the goal of replacing both Sherlock and Skeletor, these audits will be fully migrated there.
+
+<br>
+<br>
+
+In the general world of TowerSource, these audits can be determined through the **"proximity audit"** which is determined under the **"matching"** module of the Towersource system. In the **matching** module, the newly uploaded data, which are coming from the different data sources discussed in the previous section, will be checked against the data that are already committed in the Towersource database. There are various fields used in the matching, like:
+
+- operator_id
+- manager_id
+- address_id
+- type_id
+- fcc_asr_number
+- faa_study_number
+- agl
+- amsl
+- ground_elevation
+- etc.
+
+So say we are trying to load new data in Towersouce. So if the said module will find a perfect match, which means that the new data being loaded finds a perfect match from the data that has already been previously committed in the database, then the older data already committed in the database will be replaced by the newer data being loaded. Some administrative fields like created_at and updated_at will be changed by the timestamp of when the matching have had happened. But if the newer data being loaded will find an ambiguous match with the data that has already been previously committed in the database, which means that some fields are matching but some aren't, then the data that has already been previously committed in the database will not be replaced by the newer data and that the said newer data being loaded will be appended in that same database. Otherwise, if the new data being loaded will not find any matches, then that new data will be considered as a new asset that is not yet known by the Towersource database. 
+
+After all of these matchings ran, then the formation of **"audits"** will now be formed. For simplicity, this formation of audits is a function that will run after the said matchings which will form the **"groups/groupings"** or what we can call as the **"audits"**. This is synonymous to the **"set of records"** that was previously mentioned in this section. These audits follow a certain **"proximity"** or distance in meters of radius within which to limit the extent of assets to look at within the said scope. This proximity is limited to 50m. That's why the geographical data of the tower assets, which are the latitude and longitude, are a must have. So say that if the newly loaded data is a new asset, then his newly loaded data will be the center and it will look around the 50m radius all of the assets that will be within the said scope. For all assets that will be included in the said scope, these assets will now be considered as the **"associated assets"** to the said newly loaded asset. Thus, this newly loaded asset will be then called as the **"focus/reference asset"**. Well, generally, all newly loaded data will be the focus/reference asset of a certain audit or grouping since we need to audit these newly loaded data against the data we already committed in the Towersource database to make sure that we will be reconciling/merging records in the grouping, if needed. Otherwise, no merging is required. Also since there are instances in the matching where there are ambiguous matches, then those records should be included in the audits and should be looked more by the analyst. These are instances where the newly loaded data appears to have some differences on how it has been loaded previously (e.g., alterations in tower height, changes in coordinates, changes in address, change of ownership, etc.). 
+
+There are more specifics into the formation of the proximity audits. But the ones mentioned in this document are just high level of it. To know more about the formation of audits for Towersource, the reader can visit this [script](https://github.com/teamookla/towersource-data/blob/master/scripts/match.rb) in Towersource GitHub repository[^13]. Note that the scripts there were written using the Ruby programming language. This is one of the key factors on why we will be rebuilding a newer Towersource system; to migrate the legacy Towersource system to a newer platform using Python programming language as its core since this is widely used for general purpose development nowadays and is still robust and smooth for maintenance and improvements down the line.
+
+Now that we know about what a single **audit** or **group/grouping** looks like. We now need to visualize how it looks like by showing some examples. 
+
+<br>
+<br>
+
+## ii. Anatomy of Proximity Audit
+
+For this section, we will be visualizing how a single audit or grouping looks like. We will be looking into how it looks like from Sherlock's view. Also, we will be delving into how to pull these audits from the Skeletor database by showing the SQL code for that which will pull all of the important fields used for matching module to have a complete view of each records. 
+
+
+### a. Proximity Audit from Sherlock's view
+
+Previously, we have introduced a glimpse of Sherlock's UI. To navigate inside the proximity audits that need to be reviewed, one should click the option as shown below: 
+
+
 
 ---
 # 9. References
@@ -293,3 +335,4 @@ but since we're building the newer platform now in Superblocks these audits will
 [^10]: FAA Form 7460-1 - "Notice of Proposed Construction or Alteration". [https://www.faa.gov/documentlibrary/media/form/faa7460_1.pdf](https://www.faa.gov/documentlibrary/media/form/faa7460_1.pdf)
 [^11]: FAA's official public search portal for the Obstruction Evaluation / Airport Airspace Analysis (OEAAA) database.. [https://oeaaa.faa.gov/oeaaa/oe3a/main/#/search/records](https://oeaaa.faa.gov/oeaaa/oe3a/main/#/search/records)
 [^12]: Towersource aspect in Sherlock's UI that shows the "assets" information currently stored in Towersource database (i.e., Skeletor). [https://sherlock.mosaik.com/#/resources/assets](https://sherlock.mosaik.com/#/resources/assets)
+[^13]: Towersource GitHub repository. [https://github.com/teamookla/towersource-data/tree/master](https://github.com/teamookla/towersource-data/tree/master)
