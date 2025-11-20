@@ -26,7 +26,7 @@
 4. [Auto-Merging's Designed Process Overview](#4-auto-mergings-designed-process-overview)
 <!--- Here, I will just introduce again the auto-merging process and the goal of creating an automated process for the merging process so that the analyst will only focus more on "audits" or "groupings" where further human intervention is required (i.e., further research, further traversing of the maps, further inquiries, etc.). I will discuss here that we will be using as a 'primary identifier' the FCC-ASR and FAA study number to determine one tower from another. These two ingredients will help us determine which focus/reference record should be merged to their respective associated record, and which shouldn't be merged and just do nothing with the records in a grouping or audit. And then from these identifiers, we can create different combination scenarios for FCC-ASR or FAA on how these two ingredients would show up in a grouping or audit. We will call these combination of scenarios as "cases". For the first implementation of the auto-merging process, we devised the 5 major cases: blablablabla --->
 
-5. Auto-Merging's High Level Logic
+5. [Auto-Merging's High Level Logic](#5-auto-mergings-high-level-logic)
    <!--- Here, I should mention that this process can be divided in to three major chunks of logic: The Looking for Merging candidates, the meats-n-potatoes process of Case X, the maintenance logic. And then describe briefly what each chunks of logic represents and what to expect for each one of which. --->
    
 6. Auto-Merging Process' Database Anatomy
@@ -88,7 +88,7 @@
    9. Whole Code
        <!--- I don't need to paste the whole code here. What I can do is just link the file with the whole code here. I would say that the code provided is for the jupyter notebook environment to be ran. I will yet to put the code that can be ran from other IDEs like spyder or pycharm or the like. -->
       
-8. Future Plans
+8. [Future Plans](#8-future-plans)
    <!--- In the future, we are to expect that we will be seeing more opportunities to expand the functionality of the auto-merging process from the five major cases we focused on. As of now, we are studying the possibility of having Case 6 (and then just give an overview on how it looks like and an example). --->
 
 9. [References](#9-references)
@@ -434,15 +434,64 @@ As we load more company tower sheets into the Towersource database, it will also
 This is where the motivation to create an automated process comes into play. This part of the project has the goal to perform an automated merging based on the specific sets of criteria that should be met. These specific sets of criteria were carefully designed from the rigorous reviews that the team have performed specifically though the commonalities that can be seen in production where merging should take place. The main challenge into the curation of this process is "how are we going to create an automated process that can distinguish if the records from a given audit or grouping pertains to the same tower?". The common answer for this is to use parameters that can innately identify one tower from another. The main proponents considered in this process to make the automation accurately distinguish which records pertain to the same tower are the tower identifiers discussed in the previous sections -- **FCC-ASR Number** and the **FAA Study Number**. From these two parameters, we have created a starting point on how we will be designing the sets of criteria. This point is where we have created five commonly seen cases where auto merging could happen. These cases are highly dependent on the presence and combination of FCC-ASR and FAA Study Number: 
 
 
-- **Case 1**: Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number and FAA Study Number.
-- **Case 2**: Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number but have different NON NULL FAA Study Number.
-- **Case 3**: Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number but either the Focus/Reference record or the Associated Record/s have NULL FAA Study Number. 
-- **Case 4**: The Focus/Reference record have NULL FCC-ASR Number and FAA Study Number while the Associated Record/s have NON NULL FCC-ASR Number and FAA Study Number.
-- **Case 5**: Both Focus/Reference record and Associated Record/s have NULL FCC-ASR Number and FAA Study Number.
+### **Case 1**
+
+Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number and FAA Study Number.
+### **Case 2** 
+
+Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number but have different NON NULL FAA Study Number.
+
+### **Case 3**
+
+Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number but either the Focus/Reference record or the Associated Record/s have NULL FAA Study Number.
+
+### **Case 4**
+
+The Focus/Reference record have NULL FCC-ASR Number and FAA Study Number while the Associated Record/s have NON NULL FCC-ASR Number and FAA Study Number.
+
+### **Case 5**
+
+Both Focus/Reference record and Associated Record/s have NULL FCC-ASR Number and FAA Study Number.
+
+<br>
 
 Based from each of these Five Cases, the merging candidates were pulled from the database. And then from these merging candidates for each cases, the sets of criteria were carefully designed so that auto merging of records that shouldn't be merged would be prevented. 
 
+These Cases will run Chronologically - Case 1 will run first and then Case 5 will run the last - and the result of the previous case will be fed to the next case. To further visualize this - Treat these cases as "Sieve" that are vertically stacked, where Case 1 is at the top while Case 5 is at the bottom. As we go down the level of Sieve, the mesh size gets smaller. This means that the level of restriction and complexity in terms of the conditions will be higher as we go down each sieve. Thus, say, all particles that will be successfully strained by Case 1's Sieve will be the fed particles for Case 2's Sieve, and so on. Thus, all particles that will not be strained by each Case's Sieve will be the ones that should be auto-merged.
+
 For the next section, we will be delving into the surface level logic that should be followed by each of the five cases. For brevity, these surface level logic is patterned such that each of the cases are uniformly designed to be the same. But, the sub logics for each of the cases will be somewhat unique from each other since each cases have different combination of the said primary identifiers. One should expect that as we go higher in terms of Case number that the sub logics will be more restrictive to prevent inaccurate auto merging to happen.
+
+---
+# 5. Auto-Merging's High Level Logic
+
+In the previous section, it was mentioned that the surface level logic for each of the five cases are patterned such that all will be uniformly designed to be the same. In this section, we will be exploring these surface level logic and what high level logic should run for each. 
+
+For the auto-merging process, we have three main chunks of logic that are followed for each of the five cases. In chronological order, these chunks are:
+
+### **i. Merging Candidates Conditions** 
+
+This is the first chunk of logic that will kick-off for the auto-merging process. The goal of this logic is to iterate for each of the grouping to find instances where the certain-defined fields from the focus/reference record are matching with the associated record/s. If the grouping's focus/reference record won't find any associated record that will match at these certain-defined fields, then the whole grouping won't have any successful auto merging. Otherwise, these matching records will be considered as candidates for auto-merging and will proceed with the next consecutive chunks of logic.
+
+As one can notice, we can say that Case 1 has the most confidence level in terms of matching an associated record to its corresponding focus/reference record in a given grouping that gives the assurance that these pertains to the same tower asset. Reason behind is that both focus/reference and associated record share the same primary identifiers for a tower asset (i.e., FCC-ASR Number and FAA Study Number). Thus, the level of restriction in terms of matching and whatnot is not that restrictive for this case. Thus, one can also notice at this point that as we go down each cases, the level of restriction will go higher since the confidence level in terms of matching gets lower due to some differences or missing element/s from our primary identifiers between the focus/reference record and the corresponding associated record/s. This will create more complexity in the logic as we go down each cases. 
+
+In section 7, we will be exploring the algorithm for Merging Candidates rigorously and how the sub logic is changing for each cases.
+
+### **ii. Further Filter & Merging Conditions**
+
+After the Merging Candidates Conditions ran, the Further Filter Conditions will kick-off. Not all of the records that were found to be merging candidates in a given grouping can be auto-merged immediately even though they matched at certain-defined fields. From the commonalities review done prior to the design of auto-merging process, we saw cases wherein multiple towers are present in a certain proximity that shares the same, say, study number and/or operator site identifier and/or site name and/or operator, etc. This is why the Further Filter was created; to add an extra-added layer of safeguard to make sure that the records that we will be auto-merging are truly pertaining to the same tower. Thus, Further Filter Conditions can be considered as a helper function for us to make sure that the records we will be auto merging are accurate and to remove records that should not be included in the auto-merging process. Same as with Merging Candidates Conditions, the Further Filter Conditions will be more complex as we move along each of the cases.
+
+After the Further Filter Conditions, then the Merging Conditions will now kick-off. Since we already filtered the merging candidates to get which should be auto-merged, now is the time to merge these successful records from a given grouping. For the Merging Conditions, Cases 1 through 5 should just be the same. 
+
+In Section 7, we will be exploring the algorithm for both Further Filter and Merging Conditions rigorously and how the sub logic is changing for each cases.
+
+### **iii. Maintenance Conditions**
+
+After the Further Filter & Merging Conditions ran, the Maintenance Conditions will kick-off. Basically, this chunk will just perform some cleanups and preparations for the total and finalized output of each case. This way, the said process is preparing the updated list of groupings that needs to be further investigated by the next consecutive cases. 
+
+Again in Section 7, we will be exploring the algorithm for the Maintenance Conditions.  
+
+---
+# 8. Future Plans
 
 
 ---
