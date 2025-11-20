@@ -435,22 +435,26 @@ This is where the motivation to create an automated process comes into play. Thi
 
 
 ### **Case 1**
-
 Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number and FAA Study Number.
-### **Case 2** 
 
+<br>
+
+### **Case 2** 
 Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number but have different NON NULL FAA Study Number.
 
-### **Case 3**
+<br>
 
+### **Case 3**
 Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number but either the Focus/Reference record or the Associated Record/s have NULL FAA Study Number.
 
-### **Case 4**
+<br>
 
+### **Case 4**
 The Focus/Reference record have NULL FCC-ASR Number and FAA Study Number while the Associated Record/s have NON NULL FCC-ASR Number and FAA Study Number.
 
-### **Case 5**
+<br>
 
+### **Case 5**
 Both Focus/Reference record and Associated Record/s have NULL FCC-ASR Number and FAA Study Number.
 
 <br>
@@ -476,6 +480,9 @@ As one can notice, we can say that Case 1 has the most confidence level in terms
 
 In section 7, we will be exploring the algorithm for Merging Candidates rigorously and how the sub logic is changing for each cases.
 
+<br>
+<br>
+
 ### **ii. Further Filter & Merging Conditions**
 
 After the Merging Candidates Conditions ran, the Further Filter Conditions will kick-off. Not all of the records that were found to be merging candidates in a given grouping can be auto-merged immediately even though they matched at certain-defined fields. From the commonalities review done prior to the design of auto-merging process, we saw cases wherein multiple towers are present in a certain proximity that shares the same, say, study number and/or operator site identifier and/or site name and/or operator, etc. This is why the Further Filter was created; to add an extra-added layer of safeguard to make sure that the records that we will be auto-merging are truly pertaining to the same tower. Thus, Further Filter Conditions can be considered as a helper function for us to make sure that the records we will be auto merging are accurate and to remove records that should not be included in the auto-merging process. Same as with Merging Candidates Conditions, the Further Filter Conditions will be more complex as we move along each of the cases.
@@ -483,6 +490,9 @@ After the Merging Candidates Conditions ran, the Further Filter Conditions will 
 After the Further Filter Conditions, then the Merging Conditions will now kick-off. Since we already filtered the merging candidates to get which should be auto-merged, now is the time to merge these successful records from a given grouping. For the Merging Conditions, Cases 1 through 5 should just be the same. 
 
 In Section 7, we will be exploring the algorithm for both Further Filter and Merging Conditions rigorously and how the sub logic is changing for each cases.
+
+<br>
+<br>
 
 ### **iii. Maintenance Conditions**
 
