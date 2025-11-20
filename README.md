@@ -436,27 +436,23 @@ This is where the motivation to create an automated process comes into play. Thi
 
 ### **Case 1**
 Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number and FAA Study Number.
-
 <br>
 
 ### **Case 2** 
 Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number but have different NON NULL FAA Study Number.
-
 <br>
 
 ### **Case 3**
 Both the Focus/Reference record and the Associated Record/s have the same NON NULL FCC-ASR Number but either the Focus/Reference record or the Associated Record/s have NULL FAA Study Number.
-
 <br>
 
 ### **Case 4**
 The Focus/Reference record have NULL FCC-ASR Number and FAA Study Number while the Associated Record/s have NON NULL FCC-ASR Number and FAA Study Number.
-
 <br>
 
 ### **Case 5**
 Both Focus/Reference record and Associated Record/s have NULL FCC-ASR Number and FAA Study Number.
-
+<br>
 <br>
 
 Based from each of these Five Cases, the merging candidates were pulled from the database. And then from these merging candidates for each cases, the sets of criteria were carefully designed so that auto merging of records that shouldn't be merged would be prevented. 
@@ -479,7 +475,6 @@ This is the first chunk of logic that will kick-off for the auto-merging process
 As one can notice, we can say that Case 1 has the most confidence level in terms of matching an associated record to its corresponding focus/reference record in a given grouping that gives the assurance that these pertains to the same tower asset. Reason behind is that both focus/reference and associated record share the same primary identifiers for a tower asset (i.e., FCC-ASR Number and FAA Study Number). Thus, the level of restriction in terms of matching and whatnot is not that restrictive for this case. Thus, one can also notice at this point that as we go down each cases, the level of restriction will go higher since the confidence level in terms of matching gets lower due to some differences or missing element/s from our primary identifiers between the focus/reference record and the corresponding associated record/s. This will create more complexity in the logic as we go down each cases. 
 
 In section 7, we will be exploring the algorithm for Merging Candidates rigorously and how the sub logic is changing for each cases.
-
 <br>
 <br>
 
@@ -490,7 +485,6 @@ After the Merging Candidates Conditions ran, the Further Filter Conditions will 
 After the Further Filter Conditions, then the Merging Conditions will now kick-off. Since we already filtered the merging candidates to get which should be auto-merged, now is the time to merge these successful records from a given grouping. For the Merging Conditions, Cases 1 through 5 should just be the same. 
 
 In Section 7, we will be exploring the algorithm for both Further Filter and Merging Conditions rigorously and how the sub logic is changing for each cases.
-
 <br>
 <br>
 
