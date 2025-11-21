@@ -29,16 +29,17 @@
 5. [Auto-Merging's High Level Logic](#5-auto-mergings-high-level-logic)
    <!--- Here, I should mention that this process can be divided in to three major chunks of logic: The Looking for Merging candidates, the meats-n-potatoes process of Case X, the maintenance logic. And then describe briefly what each chunks of logic represents and what to expect for each one of which. --->
    
-6. Auto-Merging Process' Database Anatomy
+6. [Auto-Merging Process Database Anatomy](#6-auto-merging-process-database-anatomy)
    <!--- I think it is better if I'll enclose each table in a tabular information as presented for each sub items of chapter/section 6 --->
-   1. Prox Audits Table
+   1. [Prox Audits Table](#i-prox-audits-table)
       <!---Here, I should introduce the table name and what should it consist. I need to say that this table is the input table for each Case. So for Case 1, the input table should be the prox_audits table ran by my query.--->
-   2. Merging Candidates
+   2. [Merging Candidates](#ii-merging-candidates)
       <!---Introduce the name of the tables produced by this chunk of logic and what kind of records should be housed by each table. I should say that "if we continue case 1's process, it should producs tables X and Y". --->
-   3. Further Filter & Merging Process
+   3. [Further Filter and Merging Process](#iii-further-filter-and-merging-process)
       <!---Introduce the name of the tables produced by this chunk of logic and what kind of records should be housed by each table. I should say that "if we continue case 1's process, it should producs tables X and Y". --->
-   4. Maintenance Process
+   4. [Maintenance Process](#iv-maintenance-process)
     <!---Introduce the name of the tables produced by this chunk of logic and what kind of records should be housed by each table. I should say that "if we continue case 1's process, it should producs tables X and Y. And then at this point, Table Z will be the input table for Case 2 to kick off, and then the same process continues for each Cases". --->
+   5. [Summary](#v-summary)
    
 7. Elaborated Auto-Merging Process (Algorithm)
    1. Table Metadata
@@ -474,7 +475,7 @@ This is the first chunk of logic that will kick-off for the auto-merging process
 
 As one can notice, we can say that Case 1 has the most confidence level in terms of matching an associated record to its corresponding focus/reference record in a given grouping that gives the assurance that these pertains to the same tower asset. Reason behind is that both focus/reference and associated record share the same primary identifiers for a tower asset (i.e., FCC-ASR Number and FAA Study Number). Thus, the level of restriction in terms of matching and whatnot is not that restrictive for this case. Thus, one can also notice at this point that as we go down each cases, the level of restriction will go higher since the confidence level in terms of matching gets lower due to some differences or missing element/s from our primary identifiers between the focus/reference record and the corresponding associated record/s. This will create more complexity in the logic as we go down each cases. 
 
-In section 7, we will be exploring the algorithm for Merging Candidates rigorously and how the sub logic is changing for each cases.
+In section 7, we will be exploring the algorithm for Merging Candidates rigorously and how the sub logic is changing for each cases. In the code for Auto-Merging process, this chunk of logic has the function name of `split_case_X_audits`, where `X` pertains to case number (example: `split_case_1_audits` is the merging candidates conditions function for Case 1).
 <br>
 <br>
 
@@ -484,7 +485,7 @@ After the Merging Candidates Conditions ran, the Further Filter Conditions will 
 
 After the Further Filter Conditions, then the Merging Conditions will now kick-off. Since we already filtered the merging candidates to get which should be auto-merged, now is the time to merge these successful records from a given grouping. For the Merging Conditions, Cases 1 through 5 should just be the same. 
 
-In Section 7, we will be exploring the algorithm for both Further Filter and Merging Conditions rigorously and how the sub logic is changing for each cases.
+In Section 7, we will be exploring the algorithm for both Further Filter and Merging Conditions rigorously and how the sub logic is changing for each cases. In the code for Auto-Merging process, this chunk of logic has the function name of `apply_case_X_full_processing`, where `X` pertains to case number (example: `apply_case_1_full_processing` is the Further Filter & Merging Conditions function for Case 1).
 <br>
 <br>
 
@@ -492,7 +493,108 @@ In Section 7, we will be exploring the algorithm for both Further Filter and Mer
 
 After the Further Filter & Merging Conditions ran, the Maintenance Conditions will kick-off. Basically, this chunk will just perform some cleanups and preparations for the total and finalized output of each case. This way, the said process is preparing the updated list of groupings that needs to be further investigated by the next consecutive cases. 
 
-Again in Section 7, we will be exploring the algorithm for the Maintenance Conditions.  
+Again in Section 7, we will be exploring the algorithm for the Maintenance Conditions. In the code for Auto-Merging process, this chunk of logic has the function name of `apply_case_X_maintenance_logic`, where `X` pertains to case number (example: `apply_case_1_maintenance_logic` is the Maintenance Conditions function for Case 1).
+
+---
+# 6. Auto-Merging Process Database Anatomy
+
+Before we'll discuss the step-by-step algorithm for each of the "chunks" of logic for each cases, we must first introduce the table names that will be produced and used by each of the Cases. Also, we will define what each tables should contain, what tables should be fed for a given chunk of logic, and from what chunk of logic the certain tables will be produced.
+
+## i. Prox Audits Table
+
+| Table Name            | Description                                                                                                                                                                                                                                                                                                                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `prox_audits_table` | This table will house all of the proximity audits/groupings prior to the commencement of the Auto-Merging process. Note that the Auto-Merging process will run after the proximity audits will ran. The contents of this table come from the data pulled by the SQL code shown in Section 3b. This table will be the input table for Case 1's Merging Candidates Conditions logic. |
+
+<br>
+
+## ii. Merging Candidates
+
+The following tables will be produced by this chunk of logic: 
+
+| Table Name                                          | Description                                                                                                                                                                                                                                                                                 |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `caseX_auto_merge_candidates`                     | Here, `X` pertains to case number. This table will house all of the focus/reference record and their corresponding matching associated record/s from a given grouping. Thus, the records that will reside in this table are the records that will have the possibility to be auto-merged. |
+| `initial_caseX_prox_audits_post_auto_merge_table` | Here, `X` pertains to case number. This table will house all records that don't satisfy the matching conditions imposed for each case.                                                                                                                                                    |
+<br>
+
+## iii. Further Filter and Merging Process
+
+The following tables will be produced by this chunk of logic:
+
+| Table Name                                          | Description                                                                                                                                                                                                                                                                                                                                                          |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `caseX_auto_merge_further_filter`                 | Here, `X` pertains to case number. This table will house all of the focus/reference record and their corresponding associated record/s from a given grouping that satisfies the given set of further filter conditions imposed for each case. Thus, the records that will reside in this table are the records that will be auto-merged.                           |
+| `updated_caseX_prox_audits_post_auto_merge_table` | Here, `X` pertains to case number. This table will house all records that don't satisfy the matching conditions and further filter conditions imposed for each case, and also the resulting merged singular record (note that this table won't show the original focus/reference record and corresponding associated record/s that went through the auto-merging). |
+| `caseX_post_auto_merge_table`                     | Here, `X` pertains to case number. This table will only house all of the resulting merged singular record.                                                                                                                                                                                                                                                         |
+| `caseX_raw_post_auto_merge_table`                 | Here, `X` pertains to case number. This table will show the resulting merged singular record, and the original focus/reference record & the corresponding associated/records that were used to produce the said merged singular record.                                                                                                                            |
+
+<br>
+
+## iv. Maintenance Process
+
+The following tables will be produced by this chunk of logic:
+
+| Table Name                                        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `caseX_aggregated_final_asset_table`            | Here, `X` pertains to case number. After the Further Filter & Merging Conditions ran, there will have some instances where a given audit/grouping will only have one record remaining (i.e., all records in a given grouping were used to produce a merged singular record or all of the corresponding associated records in a given grouping were already used by the previous groupings that have produced a merged singular record). Thus, we can consider this grouping with only one record remaining as already "resolved". Thus, this record will go to this final asset table. |
+| `final_caseX_prox_audits_post_auto_merge_table` | Here, `X` pertains to case number. This table is the cleaned up and sorted resulting proximity audits table. Thus, this table will house all groupings that still has a focus/reference record and at least one associated record that are still subject for auditing. Ultimately, this is the updated list of proximity audits after the auto-merging done by, say, Case 1 happened.                                                                                                                                                                                                  |
+
+
+<br>
+
+## v. Summary
+
+The table shown below shows the input and output table's for the given function for each cases: 
+
+**Case 1**
+
+| Input Table                                                                                                                                            | Function                         | Output Table                                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `prox_audits_table`                                                                                                                                  | `split_case_1_audits`          | `case1_auto_merge_candidates`<br>`initial_case1_prox_audits_post_auto_merge_table`                                                                               |
+| `case1_auto_merge_candidates`<br>`initial_case1_prox_audits_post_auto_merge_table`                                                                 | `apply_case_1_full_processing` | `case1_auto_merge_further_filter`<br>`updated_case1_prox_audits_post_auto_merge_table`<br>`case1_post_auto_merge_table`<br>`case1_raw_post_auto_merge_table` |
+| `prox_audits_table`<br>`updated_case1_prox_audits_post_auto_merge_table`<br>`case1_post_auto_merge_table`<br>`case1_raw_post_auto_merge_table` | `apply_case_1_maintenance_logic`   | `case1_aggregated_final_asset_table`<br>`final_case1_prox_audits_post_auto_merge_table`                                                                          |
+
+<br>
+
+**Case 2**
+
+| Input Table                                                                                                                                            | Function                         | Output Table                                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `final_case1_prox_audits_post_auto_merge_table`                                                                                                      | `split_case_2_audits`          | `case2_auto_merge_candidates`<br>`initial_case2_prox_audits_post_auto_merge_table`                                                                               |
+| `case2_auto_merge_candidates`<br>`initial_case2_prox_audits_post_auto_merge_table`                                                                 | `apply_case_2_full_processing` | `case2_auto_merge_further_filter`<br>`updated_case2_prox_audits_post_auto_merge_table`<br>`case2_post_auto_merge_table`<br>`case2_raw_post_auto_merge_table` |
+| `prox_audits_table`<br>`updated_case2_prox_audits_post_auto_merge_table`<br>`case2_post_auto_merge_table`<br>`case2_raw_post_auto_merge_table` | `apply_case_2_maintenance_logic`   | `case2_aggregated_final_asset_table`<br>`final_case2_prox_audits_post_auto_merge_table`                                                                          |
+
+<br>
+
+**Case 3**
+
+| Input Table                                                                                                                                            | Function                         | Output Table                                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `final_case2_prox_audits_post_auto_merge_table`                                                                                                      | `split_case_3_audits`          | `case3_auto_merge_candidates`<br>`initial_case3_prox_audits_post_auto_merge_table`                                                                               |
+| `case3_auto_merge_candidates`<br>`initial_case3_prox_audits_post_auto_merge_table`                                                                 | `apply_case_3_full_processing` | `case3_auto_merge_further_filter`<br>`updated_case3_prox_audits_post_auto_merge_table`<br>`case3_post_auto_merge_table`<br>`case3_raw_post_auto_merge_table` |
+| `prox_audits_table`<br>`updated_case3_prox_audits_post_auto_merge_table`<br>`case3_post_auto_merge_table`<br>`case3_raw_post_auto_merge_table` | `apply_case_3_maintenance_logic`   | `case3_aggregated_final_asset_table`<br>`final_case3_prox_audits_post_auto_merge_table`                                                                          |
+
+<br>
+
+**Case 4**
+
+| Input Table                                                                                                                                            | Function                         | Output Table                                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `final_case3_prox_audits_post_auto_merge_table`                                                                                                      | `split_case_4_audits`          | `case4_auto_merge_candidates`<br>`initial_case4_prox_audits_post_auto_merge_table`                                                                               |
+| `case4_auto_merge_candidates`<br>`initial_case4_prox_audits_post_auto_merge_table`                                                                 | `apply_case_4_full_processing` | `case4_auto_merge_further_filter`<br>`updated_case4_prox_audits_post_auto_merge_table`<br>`case4_post_auto_merge_table`<br>`case4_raw_post_auto_merge_table` |
+| `prox_audits_table`<br>`updated_case4_prox_audits_post_auto_merge_table`<br>`case4_post_auto_merge_table`<br>`case4_raw_post_auto_merge_table` | `apply_case_4_maintenance_logic`   | `case4_aggregated_final_asset_table`<br>`final_case4_prox_audits_post_auto_merge_table`                                                                          |
+
+<br>
+
+**Case 5**
+
+| Input Table                                                                                                                                            | Function                         | Output Table                                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `final_case4_prox_audits_post_auto_merge_table`                                                                                                      | `split_case_5_audits`          | `case5_auto_merge_candidates`<br>`initial_case5_prox_audits_post_auto_merge_table`                                                                               |
+| `case5_auto_merge_candidates`<br>`initial_case5_prox_audits_post_auto_merge_table`                                                                 | `apply_case_5_full_processing` | `case5_auto_merge_further_filter`<br>`updated_case5_prox_audits_post_auto_merge_table`<br>`case5_post_auto_merge_table`<br>`case5_raw_post_auto_merge_table` |
+| `prox_audits_table`<br>`updated_case5_prox_audits_post_auto_merge_table`<br>`case5_post_auto_merge_table`<br>`case5_raw_post_auto_merge_table` | `apply_case_5_maintenance_logic`   | `case5_aggregated_final_asset_table`<br>`final_case5_prox_audits_post_auto_merge_table`                                                                          |
+
 
 ---
 # 8. Future Plans
