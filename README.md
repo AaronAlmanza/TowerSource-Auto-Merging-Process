@@ -41,14 +41,12 @@
     <!---Introduce the name of the tables produced by this chunk of logic and what kind of records should be housed by each table. I should say that "if we continue case 1's process, it should producs tables X and Y. And then at this point, Table Z will be the input table for Case 2 to kick off, and then the same process continues for each Cases". --->
    5. [Summary](#v-summary)
    
-7. Elaborated Auto-Merging Process (Algorithm)
-   1. Table Metadata
-      <!--- Information about each columns in prox_audits table. --->
-   2. Python Packages
+7. [Elaborated Auto-Merging Process](#7-elaborated-auto-merging-process)
+   1. [Python Packages](#i-python-packages)
       <!--- Just enumerate all of the python packages I will be using and then define each of the packages but I will be putting the documentation Cited in the bibliography but hyperlinked in the word "Documentation" as part of this section's paragraphs --->
-   3. Preliminary Part
+   2. [Preliminary Part](#ii-preliminary-part)
       <!--- Here, I will present the loading of the data, agl difference, geodesic, future warnings, caching, scraping, merging, etc. Any logic or defined functions in my code that is not part of the three major chunks of auto-merging process. At the end of this part, tell the reader to look at the whole code to appreciate the placement of each defined functions in the code. --->
-   4. Case 1 Logic
+   3. Case 1 Logic
       <!--- I can mention that this case would most probably play its role more as we load more tower sheets from the companies. Nonetheless, mention the logic behind this case step-by-step and as clear as possible--->
       <!--- For each chunks, I should show the code.--->
       1. Merging Candidates
@@ -56,7 +54,7 @@
       3. Maintencance Process
       4. Example
          <!--- Show an example grouping that made it through this case successfully --->
-   5. Case 2 Logic
+   4. Case 2 Logic
       <!--- I can mention that this case would most probably play its role more as we load more tower sheets from the companies. Nonetheless, mention the logic behind this case step-by-step and as clear as possible--->
       <!--- For each chunks, I should show the code--->
       1. Merging Candidates
@@ -64,7 +62,7 @@
       3. Maintencance Process
       4. Example
          <!--- Show an example grouping that made it through this case successfully --->
-   6. Case 3 Logic
+   5. Case 3 Logic
       <!--- I can mention that this case would most probably play its role more as we load more tower sheets from the companies. Nonetheless, mention the logic behind this case step-by-step and as clear as possible--->
       <!--- For each chunks, I should show the code--->
       1. Merging Candidates
@@ -72,21 +70,21 @@
       3. Maintencance Process
       4. Example
          <!--- Show an example grouping that made it through this case successfully --->
-   7. Case 4 Logic
+   6. Case 4 Logic
       <!--- For each chunks, I should show the code--->
       1. Merging Candidates
       2. Further Filter & Merging Process
       3. Maintencance Process
       4. Example
          <!--- Show an example grouping that made it through this case successfully --->
-   8. Case 5 Logic
+   7. Case 5 Logic
       <!--- For each chunks, I should show the code--->
       1. Merging Candidates
       2. Further Filter & Merging Process
       3. Maintencance Process
       4. Example
          <!--- Show an example grouping that made it through this case successfully --->
-   9. Whole Code
+   8. Whole Code
        <!--- I don't need to paste the whole code here. What I can do is just link the file with the whole code here. I would say that the code provided is for the jupyter notebook environment to be ran. I will yet to put the code that can be ran from other IDEs like spyder or pycharm or the like. -->
       
 8. [Future Plans](#8-future-plans)
@@ -597,6 +595,62 @@ The table shown below shows the input and output table's for the given function 
 
 
 ---
+# 7. Elaborated Auto-Merging Process
+
+In this section, we will be discussing in details the chronological steps followed by each of the five cases. But before we will be doing that, we will try to enumerate first the python packages used by the auto-merging process, and then we'll go next into discussing some defined functions that will be used by the three main chunks discussed in the previous section. 
+
+## i. Python Packages
+
+Shown below are the specific Python Packages used in the code for the Auto-Merging process. Here, we defined the purpose of these packages in the said code, and what functions were used for each package. 
+
+| Package                  | Purpose in the Code                                                                                                                                                                                      | Key Functionality                                 |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| pandas[^14]                   | The core data manipulation engine. Used for everything involving tables (DataFrames), grouping records by `focus_asset_id`, complex sequential filtering, merging data, and preparing final output files.  | `pd.DataFrame`, `df.groupby()`, `pd.concat()`, `df.loc[]` |
+| typing[^15]                   | Used for type hinting in function definitions (e.g., `-> Tuple[pd.DataFrame, pd.DataFrame]`). This improves code readability and allows for static analysis.                                               | `Tuple`, `List`                                       |
+| datetime[^16]                 | Used for handling temporal data. Crucial for stamping the merged records with the precise `updated_at` time and performing date-based comparisons for filtering.                                           | `datetime.now()`, `datetime.strptime()`               |
+| numpy[^17]                    | Used for numerical operations, handling multi-dimensional arrays, and representing special values like `NaN` (Not a Number) for initializing columns and handling invalid data.                            | `np.nan`, `np.inf`                                    |
+| requests[^3]                 | The base library for making HTTP calls. Although largely encapsulated by the `requests.Session` object, it's the fundamental tool for web communication.                                                   | `requests.post()`                                   |
+| json[^18]                     | Used for handling data interchange with the external FAA API, serializing Python dictionaries into JSON format for the API request payload.                                                              | `json.dumps()`, `response.json()`                     |
+| re[^19]                       | The regular expression module. Used specifically within the `parse_asn()` function to validate and break down the structure of the FAA Study Number (ASN).                                                 | `re.match()`                                        |
+| time[^20]                     | Used for measuring execution time (logging runtime). Essential for assessing the effectiveness of our performance optimizations.                                                                         | `time.time()`                                       |
+| warnings[^21]                 | Used for code stability. Added to safely suppress `FutureWarning` messages from pandas, keeping the notebook UI clean without breaking logic.                                                              | `warnings.simplefilter()`                           |
+| geopy.distance[^22]           | Used for geospatial calculations. Specifically calculates the geodesic distance (shortest distance over the earth’s surface) in meters between assets, which populates the `distance_to_reference` column. | `geodesic()`                                        |
+| tqdm[^23]                     | Used to display progress bars. Provides visual feedback during long-running tasks, especially the pre-caching stage.                                                                                     | `tqdm()`                                            |
+| concurrent.futures[^24]       | Used for implementing multi-threading. This allows the `pre_populate_api_caches()` function to safely execute multiple web scraping requests simultaneously.                                               | `ThreadPoolExecutor`                                |
+| requests.adapters.Retry[^3]  | A submodule used to configure the `requests.Session` object with an automatic retry policy. This handles transient network failures by trying a request multiple times with increasing delays (backoff).   | `Retry` (used in `create_robust_session`)             |
+| urllib3.util.retry.Retry[^25] | The underlying library component utilized by `requests` to define the specific logic for retry strategy and exponential backoff, ensuring resilience against server throttling.                            | `Retry` (used in `create_robust_session`)             |
+
+
+<br>
+<br>
+
+## ii. Preliminary Part
+
+Before we will be delving into the main chunks of the Auto-Merge process, we need to discuss first how we imported the packages used for this process, the preprocessing steps we did in order to build the `prox_audits_table`, and the important defined functions that will be used in the main chunks itself.
+
+First, shown below are the imported packages together with the single-line comments for readability: 
+
+```python
+import pandas as pd
+from geopy.distance import geodesic
+import numpy as np
+from typing import Tuple, List
+from datetime import datetime
+import numpy as np
+import requests
+import json
+import re
+import time 
+import warnings
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+from concurrent.futures import ThreadPoolExecutor
+from tqdm import tqdm # Used to show progress during long-running tasks (like pre-caching)
+```
+
+
+
+---
 # 8. Future Plans
 
 The team is expecting to add more Cases for the auto-merging process as we see more examples and as we load more company tower sheets. In fact, Case 6 is currently being studied that was motivated from Capital Telecom's way of reporting their data to us. The team is further looking into this possibility of adding Case 6 and the chances that it can affect other tower companies as well, not just Capital telecom. Thus in the future, it is expected that we will have a growing number of Case X for the auto-merging process.
@@ -622,3 +676,15 @@ Regarding the Standard Operating Procedure that should be followed by the DQA te
 [^11]: FAA's official public search portal for the Obstruction Evaluation / Airport Airspace Analysis (OEAAA) database.. [https://oeaaa.faa.gov/oeaaa/oe3a/main/#/search/records](https://oeaaa.faa.gov/oeaaa/oe3a/main/#/search/records)
 [^12]: Towersource aspect in Sherlock's UI that shows the "assets" information currently stored in Towersource database (i.e., Skeletor). [https://sherlock.mosaik.com/#/resources/assets](https://sherlock.mosaik.com/#/resources/assets)
 [^13]: Towersource GitHub repository. [https://github.com/teamookla/towersource-data/tree/master](https://github.com/teamookla/towersource-data/tree/master)
+[^14]: Python Library Package Documentation for [pandas](https://pandas.pydata.org/docs/)
+[^15]: Python Library Package Documentation for [typing](https://docs.python.org/3/library/typing.html)
+[^16]: Python Library Package Documentation for [datetime](https://docs.python.org/3/library/datetime.html)
+[^17]: Python Library Package Documentation for [numpy](https://numpy.org/doc/)
+[^18]: Python Library Package Documentation for [json](https://docs.python.org/3/library/json.html)
+[^19]: Python Library Package Documentation for [Regex](https://docs.python.org/3/library/re.html)
+[^20]: Python Library Package Documentation for [time](https://docs.python.org/3/library/time.html)
+[^21]: Python Library Package Documentation for [warnings](https://docs.python.org/3/library/warnings.html)
+[^22]: Python Library Package Documentation for [warnings](https://geopy.readthedocs.io/en/stable/)
+[^23]: Python Library Package Documentation for [tqdm](https://tqdm.github.io/)
+[^24]: Python Library Package Documentation for [concurrent.futures](https://docs.python.org/3/library/concurrent.futures.html)
+[^25]: Python Library Package Documentation for [urlib3](https://urllib3.readthedocs.io/en/stable/)
