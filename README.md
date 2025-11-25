@@ -46,44 +46,39 @@
       <!--- Just enumerate all of the python packages I will be using and then define each of the packages but I will be putting the documentation Cited in the bibliography but hyperlinked in the word "Documentation" as part of this section's paragraphs --->
    2. [Preliminary Part](#ii-preliminary-part)
       <!--- Here, I will present the loading of the data, agl difference, geodesic, future warnings, caching, scraping, merging, etc. Any logic or defined functions in my code that is not part of the three major chunks of auto-merging process. At the end of this part, tell the reader to look at the whole code to appreciate the placement of each defined functions in the code. --->
-   3. Case 1 Logic
+   3. [Case 1 Logic](#iii-case-1-logic)
       <!--- I can mention that this case would most probably play its role more as we load more tower sheets from the companies. Nonetheless, mention the logic behind this case step-by-step and as clear as possible--->
       <!--- For each chunks, I should show the code.--->
-      1. Merging Candidates
-      2. Further Filter & Merging Process
-      3. Maintencance Process
-      4. Example
-         <!--- Show an example grouping that made it through this case successfully --->
+      1. [Merging Candidates](#a-merging-candidates)
+      2. [Further Filter and Merging Process](#b-further-filter-and-merging-process)
+      3. [Maintencance Process](#c-maintencance-process)
+         
    4. Case 2 Logic
       <!--- I can mention that this case would most probably play its role more as we load more tower sheets from the companies. Nonetheless, mention the logic behind this case step-by-step and as clear as possible--->
       <!--- For each chunks, I should show the code--->
       1. Merging Candidates
-      2. Further Filter & Merging Process
+      2. Further Filter and Merging Process
       3. Maintencance Process
-      4. Example
-         <!--- Show an example grouping that made it through this case successfully --->
+
    5. Case 3 Logic
       <!--- I can mention that this case would most probably play its role more as we load more tower sheets from the companies. Nonetheless, mention the logic behind this case step-by-step and as clear as possible--->
       <!--- For each chunks, I should show the code--->
       1. Merging Candidates
-      2. Further Filter & Merging Process
+      2. Further Filter and Merging Process
       3. Maintencance Process
-      4. Example
-         <!--- Show an example grouping that made it through this case successfully --->
+
    6. Case 4 Logic
       <!--- For each chunks, I should show the code--->
       1. Merging Candidates
-      2. Further Filter & Merging Process
+      2. Further Filter and Merging Process
       3. Maintencance Process
-      4. Example
-         <!--- Show an example grouping that made it through this case successfully --->
+
    7. Case 5 Logic
       <!--- For each chunks, I should show the code--->
       1. Merging Candidates
-      2. Further Filter & Merging Process
+      2. Further Filter and Merging Process
       3. Maintencance Process
-      4. Example
-         <!--- Show an example grouping that made it through this case successfully --->
+
    8. Whole Code
        <!--- I don't need to paste the whole code here. What I can do is just link the file with the whole code here. I would say that the code provided is for the jupyter notebook environment to be ran. I will yet to put the code that can be ran from other IDEs like spyder or pycharm or the like. -->
       
@@ -648,7 +643,473 @@ from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm # Used to show progress during long-running tasks (like pre-caching)
 ```
 
+<br>
+Next, we need to load the proximity audits table which was pulled in the Skeletor's Database through SQL (just for the purpose of initially designing this and for testing. But in the future, we will be including in Superblocks an SQL component in the auto-merging process to perform the SQL in pulling the proximity audits. Afterwhich, it will be loaded in the python code for Auto-Merging as a pandas dataframne). 
 
+Consequently, I performed a casting of DataTypes for each of the fields in the said proximity audits. This way, we will be aligning each of the fields with their corresponding DataType.
+
+```python
+# loading the complete list of proximity audits and loading it in a pandas DataFrame
+df = pd.read_csv('Result 2025-09-23 05-01-51.csv')
+
+
+# Casting the data types
+df['focus_asset_id'] = df['focus_asset_id'].astype('Int64')
+df['focus_asset'] = df['focus_asset'].astype('string')
+df['associated_asset_id'] = df['associated_asset_id'].astype('Int64')
+df['source'] = df['source'].astype('string')
+df['name'] = df['name'].astype('string')
+df['operator_site_id'] = df['operator_site_id'].astype('string')
+df['type'] = df['type'].astype('string')
+df['description'] = df['description'].astype('string')
+df['operator_name'] = df['operator_name'].astype('string')
+df['manager_name'] = df['manager_name'].astype('string')
+df['fcc_owner_name'] = df['fcc_owner_name'].astype('string')
+df['shelter'] = df['shelter'].astype('string')
+df['power'] = df['power'].astype('string')
+df['fcc_asr_number'] = df['fcc_asr_number'].astype('string')
+df['faa_study_number'] = df['faa_study_number'].astype('string')
+df['cdbs_facility_id'] = df['cdbs_facility_id'].astype('string')
+df['region'] = df['region'].astype('string')
+df['address'] = df['address'].astype('string')
+df['stealth'] = df['stealth'].astype('string')
+df['asset_status'] = df['asset_status'].astype('string')
+df['audit_reason'] = df['audit_reason'].astype('string')
+```
+
+<br>
+
+Next, we will define a function `calculate_distance_to_reference(df)` that will calculate the `distance_to_reference` field. This field will show the geodesic distance between the associated record to its corresponding focus/reference record in a group:
+
+```python
+def calculate_distances_to_reference(df):
+    """
+    Calculates the geodesic distance (in meters) from the reference record 
+    to every associated record within the same focus_asset_id group.
+    
+    This function populates the 'distance_to_reference' column, which is essential
+    for subsequent filtering logic in the main auto-merge pipeline (e.g., AGL difference check).
+    """
+    df_copy = df.copy()
+    # Initialize the new column with NaN. Only associated records will be populated.
+    df_copy['distance_to_reference'] = np.nan 
+
+    # Step 1: Iterate through each distinct grouping in the DataFrame
+    for group_name, group_df in df_copy.groupby('focus_asset_id'):
+        # Step 2: Identify the single reference record (where associated_asset_id is NULL)
+        reference_record = group_df[group_df['associated_asset_id'].isna()]
+
+        if not reference_record.empty:
+            # Step 3: Extract the coordinates for the reference record
+            ref_lat = reference_record['latitude'].iloc[0]
+            ref_lon = reference_record['longitude'].iloc[0]
+            reference_coords = (ref_lat, ref_lon)
+
+            # Step 4: Iterate through all records in the group (looking for associated records)
+            for index, row in group_df.iterrows():
+                # Check if the current row is an associated record
+                if pd.notna(row['associated_asset_id']):
+                    record_coords = (row['latitude'], row['longitude'])
+                    
+                    # Step 5: Calculate the geodesic distance in meters
+                    distance = geodesic(reference_coords, record_coords).meters
+                    
+                    # Step 6: Update the distance_to_reference field for the associated record
+                    df_copy.loc[index, 'distance_to_reference'] = distance
+    
+    # Returns the DataFrame with the new 'distance_to_reference' column populated
+    return df_copy
+```
+
+<br>
+
+After that, we will define a function `calculate_agldiff_to_reference(df)` that will calculate the `agldiff_to_reference` field. This field will calculate the difference in AGL between the focus/reference record and each of the associated record in a group:
+
+```python
+def calculate_agldiff_to_reference(df):
+    """
+    Calculates the difference in Height Above Ground Level (AGL) between the
+    reference record and every associated record (Ref AGL - Assoc AGL).
+    
+    This function populates the 'agldiff_to_reference' column.
+    """
+    df_copy = df.copy() 
+    # Initialize the new column with NaN
+    df_copy['agldiff_to_reference'] = np.nan 
+
+    # Step 1: Iterate through each distinct grouping
+    for group_name, group_df in df_copy.groupby('focus_asset_id'):
+        # Step 2: Identify the reference record
+        reference_record = group_df[group_df['associated_asset_id'].isna()]
+
+        if not reference_record.empty:
+            # Step 3: Extract the AGL for the reference record
+            ref_agl = reference_record['agl'].iloc[0]
+
+            # Step 4: Iterate through all associated records in the group
+            for index, row in group_df.iterrows():
+                # Check if the current row is an associated record
+                if pd.notna(row['associated_asset_id']):
+                    record_agl = row['agl']
+                    
+                    # Step 5: Calculate the AGL difference (Ref AGL minus Assoc AGL)
+                    distance = ref_agl - record_agl
+                    
+                    # Step 6: Update the agldiff_to_reference field
+                    df_copy.loc[index, 'agldiff_to_reference'] = distance
+                    
+    return df_copy
+```
+
+<br>
+
+Shown below is the execution for these two functions and the creation of the `prox_audits_table`:
+
+```python
+# Calculating the distance of the associated record from the corresponding focus/reference record in a group.
+df_with_distances = calculate_distances_to_reference(df)
+
+# Calculating the AGL difference of the associated record from the corresponding focus/reference record in a group.
+df_with_differences = calculate_agldiff_to_reference(df_with_distances)
+
+# redefining the variable to create the prox_audits_table DataFrame.
+prox_audits_table = df_with_differences
+```
+
+<br>
+
+Now, we also added a function to suppress the warnings that would show so that it won't overwhelm the user interface itself causing for it to crash, if ever. This is done by the below:
+
+```python
+# Suppress all FutureWarning messages
+# This ensures a clean terminal output by hiding warnings related to DataFrame operations.
+warnings.simplefilter(action='ignore', category=FutureWarning)
+```
+
+<br>
+
+For the auto-merging process, there are some Case numbers where we will be utilizing some web scraping functionalities through API utilities in order to reconcile the FCC-ASR Number and FAA Study Number from the database with the ones from the FAA's website (we'll discuss this more in the logic for the main chunks). But before we define the web scraping functionalities (Core API utilities), let's define first the parameters it'll need. First, we need to define the exact URL to use when scraping the FAA Study Number (ASN) and the FCC-ASR Number. Shown below is that line of code for this: 
+
+```python
+# API Configuration
+api_endpoint_asn = "https://oeaaa.faa.gov/oeaaa/tools-api/namedOperation.do"
+api_endpoint_asr = "https://oeaaa.faa.gov/oeaaa/oe3a/external/portal-api/caseFiling/dynamicCaseDataByAsn.do"
+```
+
+<br>
+
+Next, we will be utilizing the Payload parameter (which you can check from the developer's tool when you try to search for an ASN and FCC-ASR Number) to get the JSON form data as we search these primary identifiers. Shown below is the template which is directly sourced from FAA's website. Also, shown below is the header and response keys that will help us connect seamlessly and to get the desired information for each API call we will be doing:
+
+```python
+# Payload templates, headers, and response keys
+api_payload_template_asn = {
+    "areaType": "id", "timeSpan": "120", "formLat": "", "formLon": "",
+    "radiusNM": 25, "structureType": "ANY", "allStatusSelected": True,
+    "criteria": {}, "fcc": "", "opName": "GET_CASE_BY_FCC",
+    "placement": "OFF_AIRPORT", "status": {}, "structureTypes": ["ANY"]
+}
+api_payload_template_asr = {
+    "areaType": "id", "timeSpan": "120", "formLat": "", "formLon": "",
+    "radiusNM": 25, "structureType": "ANY", "allStatusSelected": True,
+    "criteria": {}, "asnRegion": "", "asnYear": 0, "asnSequence": "",
+    "asnCaseType": "", "placement": "OFF_AIRPORT", "status": {},
+    "structureTypes": ["ANY"]
+}
+headers = {
+    "Content-Type": "application/json",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+}
+asn_key_in_response = "ASN"
+date_key_in_response_asn = "SUBMITTED_DATE"
+fcc_asr_key_in_response = "fccAsr"
+```
+
+<br>
+
+After that, we need to create also a function that will help us to have a robust connection to these APIs. Since not all iterations of web scraping are consistent in terms of how fast we can create or connect a session from its API or how often we will be timed-out, we need to define certain parameters entailing the global requests to create a session, number of retries whenever a connection seems absent or timed-out, waiting time to create a session in seconds, etc. We will be naming this function as `create_robust_session()`:
+
+```python
+# Robust Request Session (Retries, Timeout)
+def create_robust_session():
+    """Initializes a global requests.Session object configured for resilience."""
+    session = requests.Session()
+    session.headers.update(headers)
+    
+    retry_strategy = Retry(
+        total=5, 
+        backoff_factor=1, 
+        status_forcelist=[429, 500, 502, 503, 504],
+    )
+    
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    session.timeout = 60 # Set a 60-second timeout
+    
+    return session
+
+api_session = create_robust_session()
+```
+
+<br>
+
+
+Now that we have these prerequisites to have a robust web scraping, we can now discuss the code for Core API utilities. But generally, we will certainly face a bottleneck in our auto-merge pipeline with regards to web scraping: the slow sequential access to the external FAA web API. This is fundamentally a big problem, especially since we will be iterating each of the groups in our proximity audits one at a time, thus this process is expected to create API calls, at most, thousands of times due to the volume of expected proximity audits we have. To solve the largest performance and reliability bottleneck, we designed the core idea of *Pre-caching*. The idea is that we will be optimizing our code such that we will be defining global caches, and then we will be executing all required unique API calls in parallel before the main chunks will run. This way, the API calls will not be running on top of the complex logic for each iterations of our main pipeline process for Cases 1 through 5. We will be defining `max_workers=3` that will work in parallel to create this unique API calls to optimize the runtime.
+
+The following codes of logic entails the Core API utilities and the Caching logic. First, let's define the said global caches for ASN and FCC-ASR number:
+
+```python
+# Global Caches for API Calls
+asn_cache = {} # Cache for ASR -> ASN lookups
+asr_cache = {} # Cache for ASN -> ASR lookups
+```
+
+<br>
+
+Next, we need to Parse the FAA study number to its parts (which was discussed in Subsection iii. of Section 2) and to make sure that the correct format was followed. This is done by the function `parse_asn(asn_string)`:
+
+```python
+def parse_asn(asn_string):
+    """Parses a FAA Study Number (ASN) string into its constituent parts."""
+    match = re.match(r"(\d{4})-([A-Z]{3})-([\d\w]+)-([A-Z]{2})", str(asn_string))
+    if match:
+        year, region, sequence, casetype = match.groups()
+        return {
+            "asnYear": int(year), "asnRegion": region, "asnSequence": sequence,
+            "asnCaseType": casetype
+        }
+    return None
+```
+
+<br>
+
+Also, just to make sure that the ASR number will not be treated as a number (having a suffix of .0), we have defined a function to clean this up, for safety purposes: 
+
+```python
+def clean_asr_in_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Standardizes the 'fcc_asr_number' column by removing the '.0' suffix from clean integer values.
+    """
+    if 'fcc_asr_number' in df.columns:
+        original_strings = df['fcc_asr_number'].copy()
+        numeric_fcc = pd.to_numeric(df['fcc_asr_number'], errors='coerce')
+        
+        def to_clean_str(x, original_val):
+            if pd.notnull(x) and x == int(x): return str(int(x))
+            if pd.notnull(original_val): return str(original_val)
+            return np.nan
+        
+        df['fcc_asr_number'] = [to_clean_str(num, orig) for num, orig in zip(numeric_fcc, original_strings)]
+    return df
+```
+
+<br>
+
+With these, we can now define the functions we need to scrape the ASN and its corresponding FCC-ASR from FAA's website itself. These will be done by the `get_asn_via_api(asr_number)` and `get_asr_via_api(asn_number)`: 
+
+```python
+def get_asn_via_api(asr_number):
+    """Fetches FAA Study Number (ASN) based on FCC ASR Number, utilizing cache."""
+    asr_number_str = str(asr_number)
+    if asr_number_str in asn_cache: return asn_cache[asr_number_str]
+
+    payload = api_payload_template_asn.copy()
+    payload["fcc"] = asr_number_str
+    
+    try:
+        response = api_session.post(api_endpoint_asn, data=json.dumps(payload))
+        if response.status_code == 200:
+            data = response.json()
+            if data and isinstance(data, list) and len(data) > 0:
+                def parse_date(record):
+                    date_str = record.get(date_key_in_response_asn)
+                    if date_str and date_str != "N/A":
+                        try: return datetime.strptime(date_str, "%m/%d/%Y")
+                        except ValueError: return datetime.min
+                    return datetime.min
+                latest_record = max(data, key=parse_date)
+                
+                if asn_key_in_response in latest_record:
+                    result = latest_record[asn_key_in_response]
+                    asn_cache[asr_number_str] = result 
+                    return result
+    except Exception: pass
+    asn_cache[asr_number_str] = None
+    return None
+
+
+def get_asr_via_api(asn_number):
+    """Fetches FCC ASR Number based on FAA Study Number (ASN), utilizing cache."""
+    asn_number_str = str(asn_number)
+    if asn_number_str in asr_cache: return asr_cache[asn_number_str]
+
+    asn_parts = parse_asn(asn_number_str)
+    if not asn_parts:
+        asr_cache[asn_number_str] = None
+        return None
+
+    payload = api_payload_template_asr.copy()
+    payload.update(asn_parts)
+
+    try:
+        response = api_session.post(api_endpoint_asr, data=json.dumps(payload))
+        if response.status_code == 200:
+            data = response.json()
+            result = None
+            if isinstance(data, dict) and fcc_asr_key_in_response in data:
+                result = str(data[fcc_asr_key_in_response])
+            elif isinstance(data, list) and len(data) > 0 and fcc_asr_key_in_response in data[0]:
+                result = str(data[0][fcc_asr_key_in_response])
+            if result:
+                asr_cache[asn_number_str] = result 
+                return result
+    except Exception: pass
+    asr_cache[asn_number_str] = None
+    return None
+```
+
+<br>
+
+Since we already got the scraped ASN and ASR, we need to reconcile those with what's showing in the proximity audits (Again, we will be discussing this further in the main pipeline/chunks of each cases). We have two functions for this - `get_case_1_final_faa(ref_fcc, ref_faa, assoc_faa)` for Case 1, and `determine_faa_study_number(ref_fcc, ref_faa, assoc_faa)` for Cases 2, 3, and 4.
+
+```python
+def determine_faa_study_number(ref_fcc, ref_faa, assoc_faa):
+    """
+    Complex logic for Cases 2, 3, 4: Attempts to scrape the optimal FAA Study Number (ASN).
+    1. ASR -> ASN lookup (primary). 2. If null, cross-validate existing Ref/Assoc ASN.
+    """
+    # 1. Primary Check: ASR -> ASN
+    new_faa = get_asn_via_api(ref_fcc)
+    if pd.notnull(new_faa) and new_faa != 'N/A': return str(new_faa) 
+
+    # 2. Secondary Check: Cross-Validation (ASN -> ASR)
+    faa_ids_to_check = set()
+    if pd.notnull(ref_faa) and parse_asn(str(ref_faa)): faa_ids_to_check.add(str(ref_faa))
+    if pd.notnull(assoc_faa) and parse_asn(str(assoc_faa)): faa_ids_to_check.add(str(assoc_faa))
+    
+    for faa_id in faa_ids_to_check:
+        found_asr = get_asr_via_api(faa_id)
+        if pd.notnull(found_asr) and str(found_asr) == str(ref_fcc):
+            return faa_id 
+
+    return None
+
+
+def get_case_1_final_faa(ref_fcc, ref_faa, assoc_faa):
+    """
+    Simple logic for Case 1: Attempts ASR -> ASN lookup. 
+    If scrape fails, it falls back to the existing Reference FAA Study Number.
+    """
+    new_faa = get_asn_via_api(ref_fcc)
+    
+    if pd.notnull(new_faa) and new_faa != 'N/A': return str(new_faa)
+    else: return ref_faa
+```
+
+These codes are for the Core API Utilities. For the Caching logic, we defined the function `pre_populate_api_caches(prox_audits_table: pd.DataFrame, max_workers: int = 3)` to perform the said optimal performance together with its helper functions (`_cache_asn(asr)` and `_cache_asr(asn)`):
+
+```python
+# Worker functions for pre-caching
+def _cache_asn(asr): get_asn_via_api(asr)
+def _cache_asr(asn): get_asr_via_api(asn)
+
+def pre_populate_api_caches(prox_audits_table: pd.DataFrame, max_workers: int = 3):
+    """
+    CRITICAL OPTIMIZATION STEP. Populates the global caches by executing all required
+    unique API calls safely in parallel BEFORE the main processing loop starts.
+    """
+    start_time = time.time()
+    print(f"Starting API pre-caching with max_workers={max_workers}...")
+    
+    unique_asrs = prox_audits_table['fcc_asr_number'].dropna().unique()
+    unique_asns_raw = prox_audits_table['faa_study_number'].dropna().unique()
+    unique_asns = [asn for asn in unique_asns_raw if parse_asn(asn)]
+    
+    # Execute ASR Caching in Parallel Threads
+    print(f"Caching {len(unique_asrs)} unique ASR numbers...")
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        list(tqdm(executor.map(_cache_asn, unique_asrs), total=len(unique_asrs), desc="Caching ASRs"))
+            
+    # Execute ASN Caching in Parallel Threads
+    print(f"Caching {len(unique_asns)} unique ASN numbers...")
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        list(tqdm(executor.map(_cache_asr, unique_asns), total=len(unique_asns), desc="Caching ASNs"))
+
+    end_time = time.time()
+    duration_minutes = (end_time - start_time) / 60
+    print(f"--- API Pre-caching completed in: {duration_minutes:.2f} minutes ---")
+    print(f"Total items cached: {len(asn_cache) + len(asr_cache)}")
+```
+
+<br>
+
+Lastly, part of this preliminary part of the code is the definition of the functionality pertaining the merging of records. In the code, this is defined as `merge_records(reference_record, associated_record, merge_timestamp, faa_study_number=None)` (the logic for merging will be discussed further in the main pipeline/chunk for each cases): 
+
+```python
+def merge_records(reference_record, associated_record, merge_timestamp, faa_study_number=None):
+    """
+    Core merging logic: combines two records, applies field coalescing, operator priority, 
+    status update, and metadata updates.
+    """
+    merged_record = reference_record.copy()
+
+    # a.) Operator Name Logic: Use associated name if ref is 'Unassigned'/'Unkown' and assoc is valid
+    ref_op = reference_record['operator_name']
+    assoc_op = associated_record['operator_name']
+    
+    if pd.notnull(ref_op) and ref_op in ["Unassigned", "Unkown"] and \
+       pd.notnull(assoc_op) and assoc_op not in ["Unassigned", "Unkown"]:
+        merged_record['operator_name'] = assoc_op
+    
+    # d.) Update Source with 'Auto-Merged MM/YYYY'
+    merged_record['source'] = f"Auto-Merged {merge_timestamp.strftime('%m/%Y')}"
+    # e.) Update Timestamp (updated_at = now)
+    merged_record['created_at'] = reference_record['created_at']
+    merged_record['updated_at'] = merge_timestamp.strftime('%Y-%m-%d %H:%M:%S')
+
+    # f.) Coalesce fields: if reference field is null, fill from associated record
+    fields_to_check = [
+        "latitude", "longitude", "name", "operator_site_id", "type", "description", 
+        "manager_name", "fcc_owner_name", "agl", "amsl", "ground_elevation", "haat", 
+        "shelter", "power", "stories", "fcc_asr_number", "cdbs_facility_id", "region", 
+        "address", "construction_date", "stealth", "asset_status"
+    ]
+    for field in fields_to_check:
+        if pd.isnull(merged_record[field]) and pd.notnull(associated_record[field]):
+            merged_record[field] = associated_record[field]
+
+    # j.) Update FAA Study Number with the newly scraped/validated value
+    if faa_study_number is not None: merged_record['faa_study_number'] = faa_study_number
+        
+    # Final ASR Cleaning for merged record
+    if pd.notnull(merged_record['fcc_asr_number']):
+        try:
+            numeric_val = pd.to_numeric(merged_record['fcc_asr_number'], errors='coerce')
+            if pd.notnull(numeric_val) and numeric_val == int(numeric_val):
+                merged_record['fcc_asr_number'] = str(int(numeric_val))
+            else:
+                merged_record['fcc_asr_number'] = str(merged_record['fcc_asr_number'])
+        except Exception: pass
+            
+    # a.) Final check: If construction_date is valid, set asset_status to 'Active'
+    if pd.notnull(merged_record['construction_date']):
+        try:
+            pd.to_datetime(merged_record['construction_date'])
+            merged_record['asset_status'] = "Active"
+        except: pass
+            
+    return merged_record
+```
+
+<br>
+
+These defined preliminary codes will be used inside the main pipeline/chunks of Cases 1 though 5. In the next subsections, we will be diving into each one of those. 
+
+<br>
+
+## iii. Case 1 Logic
+
+### a. Merging Candidates
 
 ---
 # 8. Future Plans
