@@ -1053,7 +1053,7 @@ def merge_records(reference_record, associated_record, merge_timestamp, faa_stud
     """
     merged_record = reference_record.copy()
 
-    # a.) Operator Name Logic: Use associated name if ref is 'Unassigned'/'Unkown' and assoc is valid
+    # Operator Name Logic: Use associated name if ref is 'Unassigned'/'Unkown' and assoc is valid
     ref_op = reference_record['operator_name']
     assoc_op = associated_record['operator_name']
     
@@ -1061,13 +1061,13 @@ def merge_records(reference_record, associated_record, merge_timestamp, faa_stud
        pd.notnull(assoc_op) and assoc_op not in ["Unassigned", "Unkown"]:
         merged_record['operator_name'] = assoc_op
     
-    # d.) Update Source with 'Auto-Merged MM/YYYY'
+    # Update Source with 'Auto-Merged MM/YYYY'
     merged_record['source'] = f"Auto-Merged {merge_timestamp.strftime('%m/%Y')}"
-    # e.) Update Timestamp (updated_at = now)
+    # Update Timestamp (updated_at = now)
     merged_record['created_at'] = reference_record['created_at']
     merged_record['updated_at'] = merge_timestamp.strftime('%Y-%m-%d %H:%M:%S')
 
-    # f.) Coalesce fields: if reference field is null, fill from associated record
+    # Coalesce fields: if reference field is null, fill from associated record
     fields_to_check = [
         "latitude", "longitude", "name", "operator_site_id", "type", "description", 
         "manager_name", "fcc_owner_name", "agl", "amsl", "ground_elevation", "haat", 
@@ -1078,7 +1078,7 @@ def merge_records(reference_record, associated_record, merge_timestamp, faa_stud
         if pd.isnull(merged_record[field]) and pd.notnull(associated_record[field]):
             merged_record[field] = associated_record[field]
 
-    # j.) Update FAA Study Number with the newly scraped/validated value
+    # Update FAA Study Number with the newly scraped/validated value
     if faa_study_number is not None: merged_record['faa_study_number'] = faa_study_number
         
     # Final ASR Cleaning for merged record
@@ -1091,7 +1091,7 @@ def merge_records(reference_record, associated_record, merge_timestamp, faa_stud
                 merged_record['fcc_asr_number'] = str(merged_record['fcc_asr_number'])
         except Exception: pass
             
-    # a.) Final check: If construction_date is valid, set asset_status to 'Active'
+    # Final check: If construction_date is valid, set asset_status to 'Active'
     if pd.notnull(merged_record['construction_date']):
         try:
             pd.to_datetime(merged_record['construction_date'])
