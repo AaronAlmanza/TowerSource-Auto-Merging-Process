@@ -67,11 +67,11 @@
       2. [Case 3 Further Filter and Merging Process](#b-case-3-further-filter-and-merging-process)
       3. [Case 3 Maintencance Process](#c-case-3-maintencance-process)
 
-   6. Case 4 Logic
+   6. [Case 4 Logic](#vi-case-4-logic)
       <!--- For each chunks, I should show the code--->
-      1. Case 4 Merging Candidates
-      2. Case 4 Further Filter and Merging Process
-      3. Case 4 Maintencance Process
+      1. [Case 4 Merging Candidates](#a-case-4-merging-candidates)
+      2. [Case 4 Further Filter and Merging Process](#b-case-4-further-filter-and-merging-process)
+      3. [Case 4 Maintencance Process](#c-case-4-maintencance-process)
 
    7. Case 5 Logic
       <!--- For each chunks, I should show the code--->
@@ -1176,7 +1176,7 @@ For this second chunk, the following steps will run in chronological order (`app
   	- Check if the reference record's `source` field and `created_date`'s year and month are the same with the associated record. If so, then that associated record will not be included in the auto merging process. Put that associated record in `case1_prox_audits_post_auto_merge_table`.
   	- At this point, we need to check the number of remaining records. If only one record remains from it, which for sure is the reference record, put that record as well in `case1_prox_audits_post_auto_merge_table` and then proceed to the next iterating grouping. But if more than one record remains, then put these records in `case1_auto_merge_further_filter` and then we will run the **Merging Logic** for that current iterating grouping.
 
-- At this point, the **Merging Logic**. Here, we will be merging the focus/reference record and the remaining associated record into a singular record. In order to do this, the code needs to perform the following:
+- At this point, the **Merging Logic** will run. Here, we will be merging the focus/reference record and the remaining associated record into a singular record. In order to do this, the code needs to perform the following:
 
   	- If the `operator_name` of the reference record is either `Unassigned` or `Unkown` while the `operator_name` of the associated record is neither `Unassigned` nor `Unkown`, use the `operator_name` from the associated record. Otherwise, use the `operator_name` from the reference record.
   	- `focus_asset_id` and `focus_asset` should still be the same as the reference record.
@@ -1459,7 +1459,7 @@ For this second chunk, the following steps will run in chronological order (`app
   	- Check if the reference record's `source` field and `created_date`'s year and month are the same with the associated record. If so, then that associated record will not be included in the auto merging process. Put that associated record in `case2_prox_audits_post_auto_merge_table`.
   	- At this point, we need to check the number of remaining records. If only one record remains from it, which for sure is the reference record, put that record as well in `case2_prox_audits_post_auto_merge_table` and then proceed to the next iterating grouping. But if more than one record remains, then put these records in `case2_auto_merge_further_filter` and then we will run the **Merging Logic** for that current iterating grouping.
 
-- At this point, the **Merging Logic**. Here, we will be merging the focus/reference record and the remaining associated record into a singular record. In order to do this, the code needs to perform the following:
+- At this point, the **Merging Logic** will run. Here, we will be merging the focus/reference record and the remaining associated record into a singular record. In order to do this, the code needs to perform the following:
 
   	- If the `operator_name` of the reference record is either `Unassigned` or `Unkown` while the `operator_name` of the associated record is neither `Unassigned` nor `Unkown`, use the `operator_name` from the associated record. Otherwise, use the `operator_name` from the reference record.
   	- `focus_asset_id` and `focus_asset` should still be the same as the reference record.
@@ -1949,6 +1949,164 @@ def apply_case_3_maintenance_logic(
     aggregated_final_asset_table = pd.concat([running_final_asset_table, case3_final_assets], ignore_index=True)
 
     return aggregated_final_asset_table, sorted_post_merge_table
+```
+
+<br>
+
+# vi. Case 4 Logic
+
+The following main chunks/pipeline will run in chronological order:
+
+### a. Case 4 Merging Candidates 
+
+For this first chunk, the following steps will run in chronological order (`split_case_4_audits()`):
+
+- The input table we will be using is the `final_case3_prox_audits_post_auto_merge_table`.
+
+- Iterate for each grouping in the `final_case3_prox_audits_post_auto_merge_table` and apply a matching condition: Get the records for each group/audit where both `fcc_asr_number` and `faa_study_number` of the focus/reference record are `NULL` while the associated records have `NON NULL` values for both fields. Also, the focus/reference record and the associated record/s should have the same values at these fields: `operator_name`, `operator_site_id`, `asset_status`, `type`, and `name`.
+
+- For the matching records, put these in `case_4_auto_merge_candidates` table. Thus, the matching candidates should have one focus/reference record and at least one associated record.
+
+- For records in a group that won't be satisfying the said matching condition, put these in `case4_prox_audits_post_auto_merge_table`. 
+
+
+Shown below is the defined function to perform these tasks: 
+
+```python
+# CASE 4: Looking for Merging Candidates
+def split_case_4_audits(case3_sorted_post_merge_table: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """CASE 4: Candidates require Ref FCC/FAA NULL, Assoc FCC/FAA NOT NULL, AND a 5-way operational match."""
+    working_table = case3_sorted_post_merge_table.copy(); working_table = clean_asr_in_dataframe(working_table) 
+    candidates_indices = set(); grouped = working_table.groupby('focus_asset_id')
+
+    for focus_asset_id, group in grouped:
+        reference_record_df = group[group['associated_asset_id'].isnull()]
+        associated_records_df = group[group['associated_asset_id'].notnull()]
+        ref_index = reference_record_df.index[0] if len(reference_record_df) == 1 else None
+
+        if len(reference_record_df) == 1 and ref_index is not None:
+            reference_record = reference_record_df.iloc[0]
+            
+            if pd.isnull(reference_record['fcc_asr_number']) and pd.isnull(reference_record['faa_study_number']):
+                
+                ref_op_name = reference_record['operator_name']; ref_op_site_id = reference_record['operator_site_id']
+                ref_asset_status = reference_record['asset_status']; ref_type = reference_record['type']
+                ref_name = reference_record['name']
+
+                mask_assoc_not_null = (associated_records_df['fcc_asr_number'].notnull()) & \
+                                      (associated_records_df['faa_study_number'].notnull())
+                
+                mask_field_match = (associated_records_df['operator_name'] == ref_op_name) & \
+                                   (associated_records_df['operator_site_id'] == ref_op_site_id) & \
+                                   (associated_records_df['asset_status'] == ref_asset_status) & \
+                                   (associated_records_df['type'] == ref_type) & \
+                                   (associated_records_df['name'] == ref_name)
+                
+                final_matching_mask = mask_assoc_not_null & mask_field_match
+                matching_associated_records = associated_records_df[final_matching_mask]
+                
+                if not matching_associated_records.empty:
+                    candidates_indices.add(ref_index); candidates_indices.update(matching_associated_records.index)
+
+    case4_auto_merge_candidates = working_table.loc[list(candidates_indices)].copy()
+    all_original_indices = set(working_table.index) 
+    final_post_merge_indices = all_original_indices.difference(candidates_indices)
+    case4_prox_audits_post_auto_merge_table = working_table.loc[list(final_post_merge_indices)].copy()
+
+    cols = working_table.columns
+    if case4_auto_merge_candidates.empty: case4_auto_merge_candidates = pd.DataFrame(columns=cols)
+    if case4_prox_audits_post_auto_merge_table.empty: case4_prox_audits_post_auto_merge_table = pd.DataFrame(columns=cols)
+
+    return case4_auto_merge_candidates, case4_prox_audits_post_auto_merge_table
+```
+
+<br>
+
+## b. Case 4 Further Filter and Merging Process
+
+For this second chunk, the following steps will run in chronological order (`apply_case_4_full_processing()`):
+
+- The input tables we will be using are `case2_auto_merge_candidates` and `initial_case2_prox_audits_post_auto_merge_table`.
+
+- From `case2_auto_merge_candidates`, we will be iterating for each groupings in this table such that:
+
+  	- If the associated record’s `associated_asset_id` can already be found in the `case4_raw_post_auto_merge_table`'s `focus_asset_id` field, then we will not be including this anymore in the auto merging for the current iterating group. Put that record in the `case4_prox_audits_post_auto_merge_table` if so.
+  	- If the associated record’s `NON NULL` `associated_asset_id` can already be found in the `case4_raw_post_auto_merge_table’`s `associated_asset_id`, then we will not be including this anymore in the auto merging for the current iterating group. Put that record in the `case4_prox_audits_post_auto_merge_table` if so.
+  	- Check if the associated record has a source of `Auto-Merge MM/YYYY` where `MM` and `YYYY` is the month and year of when the auto merge process ran. If the `MM/YYYY` of the associated record is the same as when the current auto merge process ran, then don’t include this in the auto merging process and put that associated record in `case4_prox_audits_post_auto_merge_table`.
+  	- Check if the source of the focus record is `Auto-Merge MM/YYYY` where `MM` and `YYYY` is the month and year of when the auto merge process ran. If the `MM/YYYY` of the focus record is the same as when the current auto merge process ran, then don’t include the whole grouping in the merging process and put the whole current iterating grouping in `case4_prox_audits_post_auto_merge_table`. 
+  	- Check if the reference record's `source` field and `created_date`'s year and month are the same with the associated record. If so, then that associated record will not be included in the auto merging process. Put that associated record in `case4_prox_audits_post_auto_merge_table`.
+  	- After that, the code will perform the **“AGL percentage difference”**. So for this, it will check the percentage difference of the `agl` from the reference record against the `agl` from the associated records. If the AGL percentage difference is greater than 25%, then that associated record should not proceed anymore in the merging process and should be put to `case4_prox_audits_post_auto_merge_table`. The formula used for percentage difference is:
+
+	<br>
+  	  
+  ```math
+  $$\frac{\left|(AGL_{ref} - AGL_{assoc}) \right| }{AGL_{assoc}} \; x \; 100%$$
+  ```
+	<br>
+
+	- After that, the code will perform the **“least distance logic”**. It will find the associated record that is closest to the reference record. It can be determined that by using the
+   
+   <br>
+   
+  ```math	
+   \left|\text{agldiff\_to\_reference}\right|
+  ```
+  <br>
+  
+  	For those associated records that are not the closest in terms of distance from the reference record, put those at `case4_prox_audits_post_auto_merge_table`.
+   
+  	- At this point, we need to check the number of remaining records. If only one record remains from it, which for sure is the reference record, put that record as well in `case4_prox_audits_post_auto_merge_table` and then proceed to the next iterating grouping. But if more than one record remains, then put these records in `case4_auto_merge_further_filter` and then we will run the **Merging Logic** for that current iterating grouping.
+
+- At this point, the **Merging Logic** will run. Here, we will be merging the focus/reference record and the remaining associated record into a singular record. In order to do this, the code needs to perform the following:
+
+  	- If the `operator_name` of the reference record is either `Unassigned` or `Unkown` while the `operator_name` of the associated record is neither `Unassigned` nor `Unkown`, use the `operator_name` from the associated record. Otherwise, use the `operator_name` from the reference record.
+  	- `focus_asset_id` and `focus_asset` should still be the same as the reference record.
+  	- `associated_asset_id` of the merged singular record should come from the reference record.
+  	- The `source` should now show as `Auto-Merged MM/YYYY` where `MM` is the month and `YYYY` is the year when merging job ran.
+  	- `created_at` should be the same as the reference record while `updated_at` should be the timestamp when the merging job ran.
+  	- The `latitude`, `longitude`,  `name` , `operator_site_id`, `type`, `description`, `manager_name`, `fcc_owner_name`, `agl`, `amsl`, `ground_elevation`, `haat`, `shelter`, `power`, `stories`, `fcc_asr_number`, `cdbs_facility_id`, `region`, `address`, `construction_date`, `stealth`, `asset_status` should come from the reference record if data for each fields are `NON NULL`. If a field has `NULL` value, use the one from associated record.
+  	- `audit_reason`, `distance_to_reference`, and `agldiff_to_reference` should come only from the reference record.
+  	- If the `construction_date` is populated with a valid date, then the `asset_status` should be always populated with `Active`.
+  	- At this point, we will be performing the API call (web scraping) to populate the `faa_study_number`.
+  	  	- We will be using the `fcc_asr_number` as an input parameter of the API call. If the scraped ASN is `NON NULL`, then use that value to populate `faa_study_number` in the merged singular record.
+  	  	- If the web scraper got a `NULL` value, we will be using the `faa_study_number` of the focus record (which is just the same as the associated record's) to get the FCC-ASR Number from the same website. If we get the same FCC-ASR number from the website as the `fcc_asr_number` of the current iterating grouping, then use that `faa_study_number` as the value of the merged singular record.
+  	  	- If it still fails, we will stop the auto merging process for the current iterating grouping and put both records in `case2_prox_audits_post_auto_merge_table`.
+  	  
+- For the merged singular record, put it in the `case2_prox_audits_post_auto_merge_table`, `case2_post_auto_merge_table`, and `case2_raw_post_auto_merge_table`.
+
+- For the original reference record and the associated records used in the merging, put those also in `case2_raw_post_auto_merge_table`.
+
+- The `case2_prox_audits_post_auto_merge_table` returned by `apply_case_2_full_processing()` should contain the `case2_prox_audits_post_auto_merge_table` produced by `split_case_2_audits()` plus the finalized set of records from the candidate pool that could not be fully merged plus the newly created merged records.
+
+
+Shown below is the defined function to perform these tasks: 
+
+```python
+
+```
+
+<br>
+
+## c. Case 4 Maintencance Process 
+
+For this third chunk, the following steps will run in chronological order (`apply_case_2_maintenance_logic()`):
+
+- The input tables we will be using are `prox_audits_table`, `updated_case2_prox_audits_post_auto_merge_table`, `case2_post_auto_merge_table`, and `case2_raw_post_auto_merge_table`.
+  
+- If the `associated_asset_id` of the associated records from `case2_prox_audits_post_auto_merge_table` is already showing up in the `focus_asset_id` field from `case2_post_auto_merge_table`, then they are a match. If we found a match, then replace the values for all the fields of the said associated records from `case2_prox_audits_post_auto_merge_table` with the values of the matching record from `case2_post_auto_merge_table` except the `audit_reason`, `distance_to_reference`, `associated_asset_id`, and `agldiff_to_reference`.
+
+- If the `NON NULL` `associated_asset_id` of the associated records from `case2_prox_audits_post_auto_merge` table is already showing up in the `associated_asset_id` from `case2_raw_post_auto_merge_table`, then they are a match. If you found a match, remove the matching associated record from `case2_prox_audits_post_auto_merge table`.
+
+- Check each groupings in `case2_prox_audits_post_auto_merge_table` and see if there will be a grouping that will only have 1 record. If so, put that record in `case2_aggregated_final_asset_table`.
+
+- And then sort the records from `case2_prox_audits_post_auto_merge_table` by ascending `focus_asset_id`, and by `NULLS FIRST` `associated_asset_id`. The sorted result should be put in `final_case2_prox_audits_post_auto_merge_table`.
+
+- The `case2_aggregated_final_asset_table` should containt the contents of `case1_aggregated_final_asset_table` and the one produced by Case 2 itself. 
+
+Shown below is the defined function to perform these tasks: 
+
+```python
+
 ```
 
 <br>
