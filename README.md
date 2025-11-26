@@ -60,12 +60,12 @@
       2. [Further Filter and Merging Process](#b-further-filter-and-merging-process)
       3. [Maintencance Process](#c-maintencance-process)
 
-   5. Case 3 Logic
+   5. [Case 3 Logic](#v-case-3-logic)
       <!--- I can mention that this case would most probably play its role more as we load more tower sheets from the companies. Nonetheless, mention the logic behind this case step-by-step and as clear as possible--->
       <!--- For each chunks, I should show the code--->
-      1. Merging Candidates
-      2. Further Filter and Merging Process
-      3. Maintencance Process
+      1. [Merging Candidates](#a-merging-candidates)
+      2. [Further Filter and Merging Process](#b-further-filter-and-merging-process)
+      3. [Maintencance Process](#c-maintencance-process)
 
    6. Case 4 Logic
       <!--- For each chunks, I should show the code--->
@@ -1517,7 +1517,6 @@ def apply_case_2_full_processing(
         
         remaining_associated_records_df = associated_records_df.copy(); indices_to_remove = set()
         
-        # Filters A, B, C, D, E
         if processed_focus_ids:
             focus_id_match_mask = remaining_associated_records_df['associated_asset_id'].isin(processed_focus_ids)
             indices_to_remove.update(remaining_associated_records_df[focus_id_match_mask].index)
@@ -1683,6 +1682,271 @@ def apply_case_2_maintenance_logic(
     if case2_final_assets.empty: case2_final_assets = pd.DataFrame(columns=prox_audits_table.columns) 
         
     aggregated_final_asset_table = pd.concat([running_final_asset_table, case2_final_assets], ignore_index=True)
+
+    return aggregated_final_asset_table, sorted_post_merge_table
+```
+
+<br>
+
+# v. Case 3 Logic
+
+The following main chunks/pipeline will run in chronological order:
+
+### a. Merging Candidates 
+
+For this first chunk, the following steps will run in chronological order (`split_case_3_audits()`):
+
+- The input table we will be using is the `final_case2_prox_audits_post_auto_merge_table`.
+
+- Iterate for each grouping in the `final_case2_prox_audits_post_auto_merge_table` and apply a matching condition: Get the records for each group/audit where the `fcc_asr_number` is the same between the focus/reference record and the associated records, but the `faa_study_number` of the focus/reference record is NULL while it is `NON NULL` for the associated records. Note that `fcc_asr_number` should be `NON NULL`.
+
+- For the matching records, put these in `case_3_auto_merge_candidates` table. Thus, the matching candidates should have one focus/reference record and at least one associated record.
+
+- For records in a group that won't be satisfying the said matching condition, put these in `case3_prox_audits_post_auto_merge_table`. 
+
+
+Shown below is the defined function to perform these tasks: 
+
+```python
+# CASE 3: Looking for Merging Candidates
+def split_case_3_audits(case2_sorted_post_merge_table: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """CASE 3: Candidates require matching, non-null FCC ASR, but Ref NULL XOR Assoc NULL FAA ASN."""
+    working_table = case2_sorted_post_merge_table.copy(); working_table = clean_asr_in_dataframe(working_table) 
+    candidates_indices = set(); grouped = working_table.groupby('focus_asset_id')
+
+    for focus_asset_id, group in grouped:
+        reference_record_df = group[group['associated_asset_id'].isnull()]
+        associated_records_df = group[group['associated_asset_id'].notnull()]
+        ref_index = reference_record_df.index[0] if len(reference_record_df) == 1 else None
+
+        if len(reference_record_df) == 1 and ref_index is not None:
+            reference_record = reference_record_df.iloc[0]
+            ref_fcc = reference_record['fcc_asr_number']; ref_faa = reference_record['faa_study_number']
+
+            if pd.notnull(ref_fcc):
+                mask_ref_null = pd.isnull(ref_faa); mask_assoc_not_null = associated_records_df['faa_study_number'].notnull()
+                mask_ref_not_null = pd.notnull(ref_faa); mask_assoc_null = associated_records_df['faa_study_number'].isnull()
+                
+                matching_mask = (associated_records_df['fcc_asr_number'] == ref_fcc) & \
+                                (associated_records_df['fcc_asr_number'].notnull()) & \
+                                (
+                                    (mask_ref_null & mask_assoc_not_null) | 
+                                    (mask_ref_not_null & mask_assoc_null)
+                                )
+                
+                matching_associated_records = associated_records_df[matching_mask]
+                
+                if not matching_associated_records.empty:
+                    candidates_indices.add(ref_index); candidates_indices.update(matching_associated_records.index)
+
+    case3_auto_merge_candidates = working_table.loc[list(candidates_indices)].copy()
+    all_original_indices = set(working_table.index) 
+    final_post_merge_indices = all_original_indices.difference(candidates_indices)
+    case3_prox_audits_post_auto_merge_table = working_table.loc[list(final_post_merge_indices)].copy()
+    
+    cols = working_table.columns
+    if case3_auto_merge_candidates.empty: case3_auto_merge_candidates = pd.DataFrame(columns=cols)
+    if case3_prox_audits_post_auto_merge_table.empty: case3_prox_audits_post_auto_merge_table = pd.DataFrame(columns=cols)
+
+    return case3_auto_merge_candidates, case3_prox_audits_post_auto_merge_table
+```
+
+<br>
+
+## b. Further Filter and Merging Process
+
+For this second chunk, the following steps will run in chronological order (`apply_case_3_full_processing()`) and should just have the very same structure as with Case 2's Further Filter and Merging Process.
+
+Shown below is the defined function to perform these tasks: 
+
+```python
+# CASE 3: Further Filter & Merging Process
+def apply_case_3_full_processing(
+    candidates_table: pd.DataFrame,
+    initial_prox_audits_table: pd.DataFrame
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Executes Case 3 merging logic. Identical to Case 2: applies expanded filters and complex FAA scraping."""
+    start_time = time.time(); print("Starting Case 3 processing...")
+    merging_timestamp = datetime.now(); cols = candidates_table.columns
+    merge_source_check = f"Auto-Merged {merging_timestamp.strftime('%m/%Y')}"
+    
+    # Initialize lists and sets
+    case3_auto_merge_further_filter_list = []; case3_raw_post_auto_merge_list = []
+    case3_post_auto_merge_list = []; new_prox_audit_records_list = []
+    failed_prox_audit_records_list = []; case3_prox_audits_post_auto_merge_table = initial_prox_audits_table.copy()
+    processed_focus_ids = set(); processed_assoc_ids = set() 
+    
+    if not pd.api.types.is_datetime64_any_dtype(candidates_table['created_at']):
+        candidates_table['created_at'] = pd.to_datetime(candidates_table['created_at'], errors='coerce')
+    candidates_table['created_at_month'] = candidates_table['created_at'].dt.to_period('M')
+    grouped = candidates_table.groupby('focus_asset_id')
+    
+    for focus_asset_id, group in tqdm(grouped, desc="Processing Case 3"):
+        reference_record_df = group[group['associated_asset_id'].isnull()]
+        associated_records_df = group[group['associated_asset_id'].notnull()].copy()
+        
+        if len(reference_record_df) != 1: continue
+            
+        reference_record = reference_record_df.iloc[0]
+        ref_fcc = reference_record['fcc_asr_number']; ref_faa = reference_record['faa_study_number']
+        ref_source = reference_record['source']; ref_year_month = reference_record['created_at_month']
+        
+        remaining_associated_records_df = associated_records_df.copy(); indices_to_remove = set()
+        
+        if processed_focus_ids:
+            focus_id_match_mask = remaining_associated_records_df['associated_asset_id'].isin(processed_focus_ids)
+            indices_to_remove.update(remaining_associated_records_df[focus_id_match_mask].index)
+        if processed_assoc_ids:
+            assoc_id_match_mask = remaining_associated_records_df['associated_asset_id'].isin(processed_assoc_ids)
+            indices_to_remove.update(remaining_associated_records_df[assoc_id_match_mask].index)
+
+        source_match_mask = (remaining_associated_records_df['source'] == merge_source_check)
+        indices_to_remove.update(remaining_associated_records_df[source_match_mask].index)
+        
+        ref_source_match = reference_record['source'] == merge_source_check
+        
+        ref_record_cleaned = reference_record_df.copy()
+        if 'created_at_month' in ref_record_cleaned.columns: ref_record_cleaned.drop(columns=['created_at_month'], inplace=True)
+        
+        if ref_source_match:
+            group_associated_cleaned = associated_records_df.copy()
+            if 'created_at_month' in group_associated_cleaned.columns: group_associated_cleaned.drop(columns=['created_at_month'], inplace=True)
+            failed_prox_audit_records_list.append(ref_record_cleaned); failed_prox_audit_records_list.append(group_associated_cleaned)
+            continue 
+
+        remaining_associated_records_df['created_at_month'] = remaining_associated_records_df['created_at'].dt.to_period('M')
+        date_source_match_mask = (remaining_associated_records_df['source'] == ref_source) & \
+                                 (remaining_associated_records_df['created_at_month'] == ref_year_month)
+        indices_to_remove.update(remaining_associated_records_df[date_source_match_mask].index)
+
+        removed_associated_records_df = remaining_associated_records_df.loc[list(indices_to_remove)].copy()
+        remaining_associated_records_df = remaining_associated_records_df.loc[~remaining_associated_records_df.index.isin(indices_to_remove)]
+        if 'created_at_month' in removed_associated_records_df.columns: removed_associated_records_df.drop(columns=['created_at_month'], inplace=True)
+        if 'created_at_month' in remaining_associated_records_df.columns: remaining_associated_records_df.drop(columns=['created_at_month'], inplace=True)
+
+        if not removed_associated_records_df.empty: failed_prox_audit_records_list.append(removed_associated_records_df)
+
+        
+        if len(remaining_associated_records_df) > 0:
+            current_group_to_merge = pd.concat([ref_record_cleaned, remaining_associated_records_df], ignore_index=False)
+            case3_auto_merge_further_filter_list.append(current_group_to_merge)
+
+            for index, assoc_record in remaining_associated_records_df.iterrows():
+                final_faa = determine_faa_study_number(ref_fcc, ref_faa, assoc_record['faa_study_number'])
+
+                if pd.notnull(final_faa):
+                    merged_record_series = merge_records(reference_record, assoc_record, merging_timestamp, faa_study_number=final_faa)
+                    merged_record_df = pd.DataFrame([merged_record_series], columns=cols)
+
+                    new_prox_audit_records_list.append(merged_record_df); case3_post_auto_merge_list.append(merged_record_df)
+                    case3_raw_post_auto_merge_list.append(merged_record_df)
+                    assoc_record_df = pd.DataFrame([assoc_record], columns=cols); case3_raw_post_auto_merge_list.append(assoc_record_df)
+                    ref_record_df_cleaned_raw = ref_record_cleaned.copy(); case3_raw_post_auto_merge_list.append(ref_record_df_cleaned_raw)
+                    
+                    if pd.notnull(merged_record_series['focus_asset_id']): processed_focus_ids.add(merged_record_series['focus_asset_id'])
+                    if pd.notnull(assoc_record['associated_asset_id']): processed_assoc_ids.add(assoc_record['associated_asset_id'])
+
+                else:
+                    assoc_record_df = pd.DataFrame([assoc_record], columns=cols)
+                    failed_prox_audit_records_list.append(ref_record_cleaned); failed_prox_audit_records_list.append(assoc_record_df)
+                    
+        else:
+            failed_prox_audit_records_list.append(ref_record_cleaned)
+            
+    # Concatenate all results from lists ONCE at the end
+    if new_prox_audit_records_list:
+        new_records_df = pd.concat(new_prox_audit_records_list, ignore_index=True)
+        case3_prox_audits_post_auto_merge_table = pd.concat([case3_prox_audits_post_auto_merge_table, new_records_df], ignore_index=True)
+    if failed_prox_audit_records_list:
+        failed_records_df = pd.concat(failed_prox_audit_records_list, ignore_index=True)
+        case3_prox_audits_post_auto_merge_table = pd.concat([case3_prox_audits_post_auto_merge_table, failed_records_df], ignore_index=True)
+    
+    if case3_auto_merge_further_filter_list: case3_auto_merge_further_filter = pd.concat(case3_auto_merge_further_filter_list, ignore_index=False)
+    else: case3_auto_merge_further_filter = pd.DataFrame(columns=cols)
+    if case3_post_auto_merge_list: case3_post_auto_merge_table = pd.concat(case3_post_auto_merge_list, ignore_index=True)
+    else: case3_post_auto_merge_table = pd.DataFrame(columns=cols)
+    if case3_raw_post_auto_merge_list: case3_raw_post_auto_merge_table = pd.concat(case3_raw_post_auto_merge_list, ignore_index=True)
+    else: case3_raw_post_auto_merge_table = pd.DataFrame(columns=cols)
+
+    end_time = time.time()
+    duration_minutes = (end_time - start_time) / 60
+    print(f"--- Case 3 Processing completed in: {duration_minutes:.2f} minutes ---")
+    
+    return (
+        case3_auto_merge_further_filter, 
+        case3_prox_audits_post_auto_merge_table.drop_duplicates(ignore_index=True),
+        case3_post_auto_merge_table.drop_duplicates(ignore_index=True), 
+        case3_raw_post_auto_merge_table.drop_duplicates(ignore_index=True)
+    )
+```
+
+<br>
+
+## c. Maintencance Process 
+
+For this third chunk, the following steps will run in chronological order (`apply_case_3_maintenance_logic()`) and should just have the very same structure as with Case 2's Maintenance Process.
+
+Shown below is the defined function to perform these tasks: 
+
+```python
+# CASE 3: Maintenance Conditions for cleanup and preparation of remaining proximity audits, which will be fed for Case 4.
+def apply_case_3_maintenance_logic(
+    prox_audits_table: pd.DataFrame, post_auto_merge_table: pd.DataFrame, 
+    post_merge_table: pd.DataFrame, raw_post_merge_table: pd.DataFrame,
+    running_final_asset_table: pd.DataFrame
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Performs final cleanup for Case 3. Updates associated records, and aggregates output for Case 4."""
+    if post_auto_merge_table.empty:
+        empty_df = pd.DataFrame(columns=prox_audits_table.columns)
+        return running_final_asset_table, empty_df
+    
+    working_post_merge = post_auto_merge_table.reset_index(drop=True)
+    final_asset_table_list = []
+    associated_records_mask = working_post_merge['associated_asset_id'].notnull()
+    
+    if not post_merge_table.empty:
+        post_merge_lookup = post_merge_table.set_index('focus_asset_id')
+        all_cols = working_post_merge.columns.tolist()
+        cols_to_exclude = ["audit_reason", "distance_to_reference", "agldiff_to_reference", "associated_asset_id", "index"]
+        cols_to_update = [col for col in all_cols if col not in cols_to_exclude]
+        for idx, assoc_record in working_post_merge[associated_records_mask].iterrows():
+            assoc_asset_id = assoc_record['associated_asset_id']
+            if assoc_asset_id in post_merge_lookup.index:
+                matching_merged_record = post_merge_lookup.loc[assoc_asset_id]
+                if isinstance(matching_merged_record, pd.DataFrame): matching_merged_record = matching_merged_record.iloc[0]
+                for col in cols_to_update:
+                    if col in matching_merged_record.index:
+                        if col in working_post_merge.columns:
+                            working_post_merge.loc[idx, col] = matching_merged_record[col]
+
+    if not raw_post_merge_table.empty:
+        raw_assoc_ids = set(raw_post_merge_table['associated_asset_id'].dropna())
+        removal_mask = (working_post_merge['associated_asset_id'].notnull()) & \
+                       (working_post_merge['associated_asset_id'].isin(raw_assoc_ids))
+        working_post_merge = working_post_merge[~removal_mask]
+
+    valid_groups = working_post_merge['focus_asset_id'].dropna()
+    if not valid_groups.empty:
+        group_sizes = working_post_merge.groupby('focus_asset_id').size()
+        single_record_groups = group_sizes[group_sizes == 1].index
+        final_asset_table_df = working_post_merge[
+            working_post_merge['focus_asset_id'].isin(single_record_groups)
+        ].copy()
+        final_asset_table_list.append(final_asset_table_df)
+        working_post_merge = working_post_merge[
+            ~working_post_merge['focus_asset_id'].isin(single_record_groups)
+        ]
+
+    sorted_post_merge_table = working_post_merge.sort_values(
+        by=['focus_asset_id', 'associated_asset_id'], 
+        ascending=[True, True],
+        na_position='first'
+    ).reset_index(drop=True)
+
+    case3_final_assets = pd.concat(final_asset_table_list, ignore_index=True)
+    if case3_final_assets.empty: case3_final_assets = pd.DataFrame(columns=prox_audits_table.columns) 
+        
+    aggregated_final_asset_table = pd.concat([running_final_asset_table, case3_final_assets], ignore_index=True)
 
     return aggregated_final_asset_table, sorted_post_merge_table
 ```
