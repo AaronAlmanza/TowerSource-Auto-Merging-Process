@@ -49,35 +49,35 @@
    3. [Case 1 Logic](#iii-case-1-logic)
       <!--- I can mention that this case would most probably play its role more as we load more tower sheets from the companies. Nonetheless, mention the logic behind this case step-by-step and as clear as possible--->
       <!--- For each chunks, I should show the code.--->
-      1. [Merging Candidates](#a-merging-candidates)
-      2. [Further Filter and Merging Process](#b-further-filter-and-merging-process)
-      3. [Maintencance Process](#c-maintencance-process)
+      1. [Case 1 Merging Candidates](#a-case-1-merging-candidates)
+      2. [Case 1 Further Filter and Merging Process](#b-case-1-further-filter-and-merging-process)
+      3. [Case 1 Maintencance Process](#c-case-1-maintencance-process)
          
    4. [Case 2 Logic](#iv-case-2-logic)
       <!--- I can mention that this case would most probably play its role more as we load more tower sheets from the companies. Nonetheless, mention the logic behind this case step-by-step and as clear as possible--->
       <!--- For each chunks, I should show the code--->
-      1. [Merging Candidates](#a-merging-candidates)
-      2. [Further Filter and Merging Process](#b-further-filter-and-merging-process)
-      3. [Maintencance Process](#c-maintencance-process)
+      1. [Case 2 Merging Candidates](#a-case-2-merging-candidates)
+      2. [Case 2 Further Filter and Merging Process](#b-case-2-further-filter-and-merging-process)
+      3. [Case 2 Maintencance Process](#c-case-2-maintencance-process)
 
    5. [Case 3 Logic](#v-case-3-logic)
       <!--- I can mention that this case would most probably play its role more as we load more tower sheets from the companies. Nonetheless, mention the logic behind this case step-by-step and as clear as possible--->
       <!--- For each chunks, I should show the code--->
-      1. [Merging Candidates](#a-merging-candidates)
-      2. [Further Filter and Merging Process](#b-further-filter-and-merging-process)
-      3. [Maintencance Process](#c-maintencance-process)
+      1. [Case 3 Merging Candidates](#a-case-3-merging-candidates)
+      2. [Case 3 Further Filter and Merging Process](#b-case-3-further-filter-and-merging-process)
+      3. [Case 3 Maintencance Process](#c-case-3-maintencance-process)
 
    6. Case 4 Logic
       <!--- For each chunks, I should show the code--->
-      1. Merging Candidates
-      2. Further Filter and Merging Process
-      3. Maintencance Process
+      1. Case 4 Merging Candidates
+      2. Case 4 Further Filter and Merging Process
+      3. Case 4 Maintencance Process
 
    7. Case 5 Logic
       <!--- For each chunks, I should show the code--->
-      1. Merging Candidates
-      2. Further Filter and Merging Process
-      3. Maintencance Process
+      1. Case 5 Merging Candidates
+      2. Case 5 Further Filter and Merging Process
+      3. Case 5 Maintencance Process
 
    8. Whole Code
        <!--- I don't need to paste the whole code here. What I can do is just link the file with the whole code here. I would say that the code provided is for the jupyter notebook environment to be ran. I will yet to put the code that can be ran from other IDEs like spyder or pycharm or the like. -->
@@ -1111,7 +1111,7 @@ These defined preliminary codes will be used inside the main pipeline/chunks of 
 
 The following main chunks/pipeline will run in chronological order:
 
-### a. Merging Candidates 
+### a. Case 1 Merging Candidates 
 
 For this first chunk, the following steps will run in chronological order (`split_case_1_audits()`):
 
@@ -1163,7 +1163,7 @@ def split_case_1_audits(prox_audits_table: pd.DataFrame) -> Tuple[pd.DataFrame, 
 
 <br>
 
-## b. Further Filter and Merging Process
+## b. Case 1 Further Filter and Merging Process
 
 For this second chunk, the following steps will run in chronological order (`apply_case_1_full_processing()`):
 
@@ -1303,7 +1303,7 @@ def apply_case_1_full_processing(
 
 <br>
 
-## c. Maintencance Process 
+## c. Case 1 Maintencance Process 
 
 For this third chunk, the following steps will run in chronological order (`apply_case_1_maintenance_logic()`):
 
@@ -1389,7 +1389,7 @@ def apply_case_1_maintenance_logic(
 
 The following main chunks/pipeline will run in chronological order:
 
-### a. Merging Candidates 
+### a. Case 2 Merging Candidates 
 
 For this first chunk, the following steps will run in chronological order (`split_case_2_audits()`):
 
@@ -1444,7 +1444,7 @@ def split_case_2_audits(case1_sorted_post_merge_table: pd.DataFrame) -> Tuple[pd
 
 <br>
 
-## b. Further Filter and Merging Process
+## b. Case 2 Further Filter and Merging Process
 
 For this second chunk, the following steps will run in chronological order (`apply_case_2_full_processing()`):
 
@@ -1605,7 +1605,7 @@ def apply_case_2_full_processing(
 
 <br>
 
-## c. Maintencance Process 
+## c. Case 2 Maintencance Process 
 
 For this third chunk, the following steps will run in chronological order (`apply_case_2_maintenance_logic()`):
 
@@ -1692,7 +1692,7 @@ def apply_case_2_maintenance_logic(
 
 The following main chunks/pipeline will run in chronological order:
 
-### a. Merging Candidates 
+### a. Case 3 Merging Candidates 
 
 For this first chunk, the following steps will run in chronological order (`split_case_3_audits()`):
 
@@ -1753,7 +1753,7 @@ def split_case_3_audits(case2_sorted_post_merge_table: pd.DataFrame) -> Tuple[pd
 
 <br>
 
-## b. Further Filter and Merging Process
+## b. Case 3 Further Filter and Merging Process
 
 For this second chunk, the following steps will run in chronological order (`apply_case_3_full_processing()`) and should just have the very same structure as with Case 2's Further Filter and Merging Process.
 
@@ -1882,7 +1882,7 @@ def apply_case_3_full_processing(
 
 <br>
 
-## c. Maintencance Process 
+## c. Case 3 Maintencance Process 
 
 For this third chunk, the following steps will run in chronological order (`apply_case_3_maintenance_logic()`) and should just have the very same structure as with Case 2's Maintenance Process.
 
