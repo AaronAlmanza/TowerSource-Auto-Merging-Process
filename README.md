@@ -2732,7 +2732,7 @@ Shown below are the functions defined for the auto-merging process and their des
 
 
 
-For the whole code of auto-merging process, please refer to this file: 
+For the whole code of auto-merging process, please refer to this [file](auto_merge.ipynb) 
 
 ---
 # 8. Future Plans
