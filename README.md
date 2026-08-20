@@ -81,11 +81,15 @@
 
    8. [Summary](#viii-summary)
        <!--- I don't need to paste the whole code here. What I can do is just link the file with the whole code here. I would say that the code provided is for the jupyter notebook environment to be ran. I will yet to put the code that can be ran from other IDEs like spyder or pycharm or the like. -->
-      
-8. [Future Plans](#8-future-plans)
-   <!--- In the future, we are to expect that we will be seeing more opportunities to expand the functionality of the auto-merging process from the five major cases we focused on. As of now, we are studying the possibility of having Case 6 (and then just give an overview on how it looks like and an example). --->
 
-9. [References](#9-references)
+8. [Connecting Auto-Merge Results to Towersource Database](#8-Connecting-Auto-Merge-Results-to-Towersource-Database)
+
+
+9. [Future Plans](#9-future-plans)
+   <!--- In the future, we are to expect that we will be seeing more opportunities to expand the functionality of the auto-merging process from the five major cases we focused on. As of now, we are studying the possibility of having Case 6 (and then just give an overview on how it looks like and an example). --->
+   
+
+10. [References](#10-references)
      <!---I can create a numbering style (like in RRL) for each parts in the main documentation and then cited in this chapter. --->
      <!---FCC-ASR Website, research papers where FCC-ASR has been released or reviewed, FAA's website, research papers where FAA has been released or reviewed, packages used in Python (each packages should be cited using their documentation (can be a URL) --->
 
@@ -2735,7 +2739,11 @@ Shown below are the functions defined for the auto-merging process and their des
 For the whole code of auto-merging process, please refer to this [file](auto_merge.ipynb) 
 
 ---
-# 8. Future Plans
+# 8. Connecting Auto-Merge Results to Towersource Database
+
+
+---
+# 9. Future Plans
 
 The team is expecting to add more Cases for the auto-merging process as we see more examples and as we load more company tower sheets. In fact, Case 6 is currently being studied that was motivated from Capital Telecom's way of reporting their data to us. The team is further looking into this possibility of adding Case 6 and the chances that it can affect other tower companies as well, not just Capital telecom. Thus in the future, it is expected that we will have a growing number of Case X for the auto-merging process.
 
@@ -2745,7 +2753,7 @@ Regarding the Standard Operating Procedure that should be followed by the DQA te
 
 
 ---
-# 9. References
+# 10. References
 
 [^1]: Ookla's [Towersource](https://www.towersource.com/) User Interface
 [^2]: Documentation for [Superblocks](https://docs.superblocks.com/)
