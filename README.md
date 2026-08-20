@@ -2741,6 +2741,21 @@ For the whole code of auto-merging process, please refer to this [file](auto_mer
 ---
 # 8. Connecting Auto-Merge Results to Towersource Database
 
+From the above, we can see that the auto-merge script produce dataframes/tables that are not innately present in the Towersource database. Thus, we need to reconcile the end results from `final_case5_prox_audits_post_auto_merge_table` and `case5_aggregated_final_asset_table` to the desired tables from Towersource database, namely: `towersource.assets`, `towersource.proximity_audit_assets`, and  `towersource.asset_sources`. Before we proceed on the step-by-step things that needed to be done, we need to take note that: 
+
+- `final_case5_prox_audits_post_auto_merge_table` houses all remaining proximity audits after the auto-merging script ran. These remaining proximity audits are now left for analyst's manual review which should be done from Sherlock UI. Thus, it is expected that this table would never be higher than the `prox_audits_table` in terms of number of records. We also need to take note that:
+
+  - `focus_asset` field will show us which group/proximity audit that record belongs to. The ID housed in this field is the ID of the focus asset.
+  - From the `associated_asset_id` field:
+    - If the records has a `NULL` value here, then that record is a focus asset.
+    - If the record has a `NON NULL` value here, then that record is an associated asset and the value in this field is the ID of that associated asset.
+   
+
+- `case5_aggregated_final_asset_table` houses all proximity audits that were fully resolved by the auto-merging script. Thus, all associated assets were fully exhausted by the corresponding focus asset. Note that the only ID present in this table is the `focus_asset_id`.
+
+With these being said, the following things should be performed: 
+
+- 
 
 ---
 # 9. Future Plans
