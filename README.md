@@ -2755,7 +2755,14 @@ From the above, we can see that the auto-merge script produce dataframes/tables 
 
 With these being said, the following things should be performed: 
 
-- 
+- For all ID/records from `final_case5_prox_audits_post_auto_merge_table` and `case5_aggregated_final_asset_table` that has `source` of `Auto-Merge MM/YYYY`, where `MM` is the month and `YYYY` is the year of when the auto-merging script ran, we need to update the `towersource.assets` table with all of the information showing from these two tables. NOTE that we must make sure that we are updating the correct ID.
+- For all ID/records from `final_case5_prox_audits_post_auto_merge_table` and `case5_aggregated_final_asset_table` that has `source` of `Auto-Merge MM/YYYY`, where `MM` is the month and `YYYY` is the year of when the auto-merging script ran, we need to add a record from `towersource.asset_sources` for each corresponding ID:
+  - put the timestamp shown at `updated_at` for each IDs from `final_case5_prox_audits_post_auto_merge_table` / `case5_aggregated_final_asset_table` at the `created_at` and `updated_at` fields from `towersource.asset_sources`.
+  - We need to also put `Manual Edit` at the `updated_by` field from `towersource.asset_sources`.
+  - From `towersource.asset_sources`, the `id`, and `source_id` are just sequential fields so it is easy to generate values for these fields.
+
+- Collect all unique `focus_asset_id` from `case5_aggregated_final_asset_table`. From this list of unique `focus_asset_id`, we need to find all of its `associated_asset_id` prior to the kicking off of auto-merging process. For all `associated_asset_id` that will be found, we need to remove the records with these IDs from `towersource.assets` and `towersource.asset_sources`.
+- Now we need to pattern all proximity audits showing from `final_case5_prox_audits_post_auto_merge_table` to `towersource.proximity_audit_assets`. So, say if we have 1,000 proximity audits left in `final_case5_prox_audits_post_auto_merge_table`, then `towersource.proximity_audit_assets` should as well reflect those 1,000 proximity audits completely with accurate focus and associated asset IDs.
 
 ---
 # 9. Future Plans
