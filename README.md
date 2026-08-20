@@ -2736,7 +2736,7 @@ Shown below are the functions defined for the auto-merging process and their des
 
 
 
-For the whole code of auto-merging process, please refer to this [file](auto_merge.ipynb) 
+For the whole code of auto-merging process, please refer to this [file](auto_merge_with_new_web_scraping.ipynb) 
 
 ---
 # 8. Connecting Auto-Merge Results to Towersource Database
