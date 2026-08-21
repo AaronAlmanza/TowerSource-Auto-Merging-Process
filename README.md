@@ -2761,7 +2761,10 @@ With these being said, the following things should be performed:
   - We need to also put `Manual Edit` at the `updated_by` field from `towersource.asset_sources`.
   - From `towersource.asset_sources`, the `id`, and `source_id` are just sequential fields so it is easy to generate values for these fields.
 
-- Collect all unique `focus_asset_id` from `case5_aggregated_final_asset_table`. From this list of unique `focus_asset_id`, we need to find all of its `associated_asset_id` prior to the kicking off of auto-merging process. For all `associated_asset_id` that will be found, we need to remove the records with these IDs from `towersource.assets` and `towersource.asset_sources`.
+- For all ID/records from final_case5_prox_audits_post_auto_merge_table and case5_aggregated_final_asset_table that has source of Auto-Merged MM/YYYY, where MM is the month and YYYY is the year of when the auto-merging script ran.
+  - For each of these focus_asset_id, we need to find the corresponding associated_asset_idthat was used for merging. We can do this by comparing it against prox_audits_table (Original Before-Auto-Merging-State).
+  - Once we found the associated_asset_id used for merging – in towersource.asset_sources: Query this associated asset ID and replace all resulting records with the value of the focus asset ID; this replacement should take place in asset_id column of this table.
+- Collect all unique `focus_asset_id` from `case5_aggregated_final_asset_table`. From this list of unique `focus_asset_id`, we need to find all of its `associated_asset_id` prior to the kicking off of auto-merging process. We can do this by comparing it against prox_audits_table (Original Before-Auto-Merging-State). For all `associated_asset_id` that will be found, we need to remove the records with these IDs from `towersource.assets` and `towersource.asset_sources`.
 - Now we need to pattern all proximity audits showing from `final_case5_prox_audits_post_auto_merge_table` to `towersource.proximity_audit_assets`. So, say if we have 1,000 proximity audits left in `final_case5_prox_audits_post_auto_merge_table`, then `towersource.proximity_audit_assets` should as well reflect those 1,000 proximity audits completely with accurate focus and associated asset IDs.
 
 ---
