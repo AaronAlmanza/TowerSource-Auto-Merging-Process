@@ -2755,7 +2755,7 @@ From the above, we can see that the auto-merge script produce dataframes/tables 
 
 With these being said, the following things should be performed: 
 
-- For all ID/records from `final_case5_prox_audits_post_auto_merge_table` and `case5_aggregated_final_asset_table` that has `source` of `Auto-Merge MM/YYYY`, where `MM` is the month and `YYYY` is the year of when the auto-merging script ran, we need to update the `towersource.assets` table with all of the information showing from these two tables. NOTE that we must make sure that we are updating the correct ID.
+- For all ID/records from `final_case5_prox_audits_post_auto_merge_table` and `case5_aggregated_final_asset_table` that has `source` of `Auto-Merge MM/YYYY`, where `MM` is the month and `YYYY` is the year of when the auto-merging script ran, we need to update the `towersource.assets` table with all of the information showing from these two tables with the exception for `created_at` field -- This field should house the associated asset's `created_at` and not the one from focus asset's. NOTE that we must make sure that we are updating the correct ID.
 - For all ID/records from `final_case5_prox_audits_post_auto_merge_table` and `case5_aggregated_final_asset_table` that has `source` of `Auto-Merge MM/YYYY`, where `MM` is the month and `YYYY` is the year of when the auto-merging script ran, we need to add a record from `towersource.asset_sources` for each corresponding ID:
   - put the timestamp shown at `updated_at` for each IDs from `final_case5_prox_audits_post_auto_merge_table` / `case5_aggregated_final_asset_table` at the `created_at` and `updated_at` fields from `towersource.asset_sources`.
   - We need to also put `Manual Edit` at the `updated_by` field from `towersource.asset_sources`.
